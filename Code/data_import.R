@@ -11,7 +11,7 @@ events <- c(as.character(c(1:52, 99)))
 
 #read the data
 sheets <- excel_sheets(path)
-rm(stats)
+if (exists("stats")) rm(stats)
 for (i in 3:(length(sheets)-1)) {
   single <- read_excel(path, sheet = sheets[i], range="A5:BG38", col_names = cn)
 
@@ -26,15 +26,14 @@ for (i in 3:(length(sheets)-1)) {
           mutate(across(1, as.character)) %>%
           mutate(across(c(2:55), as.numeric)) %>%
           filter(!is.na(ID)) %>%
-          gather(events, key="week", value = "presence") %>%
-          mutate(across("presence", ~if_else(is.na(presence),0,presence))) 
-  
+          pivot_longer(events, names_to="week", values_to = "presence") %>%
+          mutate(across("presence", ~if_else(is.na(presence),0,presence)))
   
   #let's evaluate if respective week was vacation or not
   #(if at least somebody was around, then obviously not)
   trainings <- single %>%
-    spread(key ="ID", value = "presence") %>%
-    gather(-c("year", "week", "Trainings"), key = ID, value = "presence") %>%
+    pivot_wider(names_from ="ID", values_from = "presence") %>%
+    pivot_longer(-c("year", "week", "Trainings"), names_to = ID, values_to = "presence") %>%
     group_by(week, Trainings) %>%
     summarise(sum = sum(presence)) %>%
     mutate(type = if_else(sum>0,"Training", "Ferien"))  %>%
@@ -70,7 +69,7 @@ for (i in 3:(length(sheets)-1)) {
     summarise(n=sum(n)) %>%
     filter(Trainings==1)
   
-  quote <- data_train$n/n_train$n
+  quote <- data_train$n / n_train$n
   if (quote < 1) {
     #then we have a mismatch between effective trainings and trainings with data
     #first we define which weeks are missing
