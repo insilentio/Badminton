@@ -12,7 +12,7 @@ events <- c(as.character(c(1:52, 99)))
 #read the data
 sheets <- excel_sheets(path)
 if (exists("stats")) rm(stats)
-for (i in 3:(length(sheets)-1)) {
+for (i in 2:(length(sheets)-1)) {
   single <- read_excel(path, sheet = sheets[i], range="A5:BG38", col_names = cn)
 
   #tidy it up
@@ -33,12 +33,11 @@ for (i in 3:(length(sheets)-1)) {
   #(if at least somebody was around, then obviously not)
   trainings <- single %>%
     pivot_wider(names_from ="ID", values_from = "presence") %>%
-    pivot_longer(-c("year", "week", "Trainings"), names_to = ID, values_to = "presence") %>%
+    pivot_longer(-c("year", "week", "Trainings"), names_to = "ID", values_to = "presence") %>%
     group_by(week, Trainings) %>%
-    summarise(sum = sum(presence)) %>%
+    summarise(sum = sum(presence), .groups = "drop") %>%
     mutate(type = if_else(sum>0,"Training", "Ferien"))  %>%
-    mutate(type = if_else(week=="99", "Turnier", type)) %>%
-    ungroup
+    mutate(type = if_else(week=="99", "Turnier", type))
   
   #combine the 2 datasets. Col. "Trainings" can be dropped later, but is used for imputation in next step
   #some entries have to be filtered out as they contain aggregated values already (e.g. "Aktive")
@@ -61,12 +60,12 @@ for (i in 3:(length(sheets)-1)) {
   n_train <- single %>%
     group_by(type, week) %>%
     summarise(n=n_distinct(week)) %>%
-    summarise(n=sum(n)) %>%
+    summarise(n=sum(n), .groups = "drop") %>%
     filter(type=="Training")
   data_train <- single %>%
-    group_by(Trainings, week) %>%
+    group_by(Trainings, week) %>% 
     summarise(n=n_distinct(week)) %>%
-    summarise(n=sum(n)) %>%
+    summarise(n=sum(n), .groups = "drop") %>%
     filter(Trainings==1)
   
   quote <- data_train$n / n_train$n
@@ -80,13 +79,14 @@ for (i in 3:(length(sheets)-1)) {
     ma <- single %>%
       filter(ID != "SchwarzenbachIrene") %>%
       group_by(ID) %>% 
-      summarise(sum = sum(presence)) %>% 
+      summarise(sum = sum(presence), .groups = "drop") %>% 
       mutate(interpoliert = round(sum/quote) - sum)
     #now select randomly for each ID as many of the missing weeks as additional attendances were determined
     for (j in 1:nrow(ma)) {
       #first step, we don't impute for Gäste and Passive (needs different approach)
       if (ma[j,]$ID != "Gäste div." & ma[j,]$ID != "Passive div.") {
-        #sample does not work properly if x (vector from which to choose from) has length 1, hence special treatment needed
+        #sample does not work properly if x (vector from which to choose from) has length 1,
+        # hence special treatment needed
         if (length(mw$week) > 1) {
           fill_ins <- sample(mw$week, ma[j,]$interpoliert, replace = F)
         }
@@ -98,8 +98,9 @@ for (i in 3:(length(sheets)-1)) {
       }
       #now separately impute for Gäste and Passive
       if (ma[j,]$ID == "Gäste div." | ma[j,]$ID == "Passive div.") {
-        #first we define on how many trainings we want to split the interpolated values. this is determined
-        #by counting all trainings with at least 1 attendance of Gäste/Passive (similar to attendance of a person)
+        #first we define on how many trainings we want to split the interpolated values.
+        #this is determined by counting all trainings with at least 1 attendance of
+        #Gäste/Passive (similar to attendance of a person)
         miss_gp <- single %>%
           filter(ID == ma[j,]$ID, type=="Training", presence>0) %>%
           group_by(ID) %>% tally() %>% 
@@ -123,14 +124,11 @@ for (i in 3:(length(sheets)-1)) {
   #remove column Trainings
   single <- single %>% select(-Trainings)
 
-  
-   
   #add to the overall tibble
   if (!exists("stats")) {
     stats <- single
     turnier <-  turnier_single
-  }
-  else {
+  } else {
     stats <- union(stats, single)
     turnier <- union(turnier, turnier_single)
   }
