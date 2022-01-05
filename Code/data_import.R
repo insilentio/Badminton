@@ -1,7 +1,6 @@
 library(tidyverse)
 library(readxl)
 
-
 Sys.setlocale("LC_ALL", 'de_CH.UTF-8')
 path <- "~/Documents/Hobbies/Badminton/BCT_Teilnehmerliste.xlsx"
 
@@ -133,29 +132,3 @@ for (i in 2:(length(sheets)-1)) {
     turnier <- union(turnier, turnier_single)
   }
 }
-
-
-##some values
-#all visits
-stats %>% tally(presence)
-#cumulated visits per person
-stats %>% count(ID, wt=presence) %>% arrange(-n) %>% filter(!grepl("Gäste", ID) & !grepl("Passive", ID))
-#mean attendance per year, per person
-stats %>% filter(!grepl("Gäste", ID) & !grepl("Passive", ID)) %>% filter(type=="Training") %>%
-  group_by(ID,year) %>% summarise(sum=sum(presence)) %>% group_by(ID) %>% summarise(mean=mean(sum), tot=mean*n()) %>%
-  arrange(-mean) %>% print(n=60)
-# max. and min. visits
-stats %>% filter(type=="Training") %>% group_by(year, week) %>% summarise(presence=sum(presence)) %>%
-  summarise(max=max(presence), min=min(presence))
-#nr of trainings
-stats %>% filter(type=="Training") %>% distinct(year, week) %>% count()
-
-#overall mean attendance plot
-stats %>% group_by(year,week) %>% summarise(sum=sum(presence)) %>% group_by(week) %>% summarise(mean=mean(sum)) %>%
-  ggplot() +
-  aes(x=week, y=mean) +
-  geom_line() +
-  xlim(c(1,52)) +
-  scale_y_continuous(breaks = c(0:12), limits = c(0,12))
-
-
