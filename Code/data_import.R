@@ -2,7 +2,7 @@ library(tidyverse)
 library(readxl)
 
 Sys.setlocale("LC_ALL", 'de_CH.UTF-8')
-path <- "~/Documents/Hobbies/Badminton/BCT_Teilnehmerliste.xlsx"
+path <- "Data/BCT_Teilnehmerliste.xlsx"
 
 #vector with column names. 99 stands for Turnier
 cn <- c("Nachname", "Vorname", c(1:52), "ID", "Total", "99", "Kat", "Rang")
