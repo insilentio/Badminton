@@ -8,6 +8,9 @@ path <- "Data/BCT_Teilnehmerliste.xlsx"
 cn <- c("Nachname", "Vorname", c(1:52), "ID", "Total", "99", "Kat", "Rang")
 events <- c(as.character(c(1:52, 99))) 
 
+
+# attendance data -----------------------------------------------------------------------------
+
 #read the data
 sheets <- excel_sheets(path)
 if (exists("stats")) rm(stats)
@@ -132,3 +135,29 @@ for (i in 2:(length(sheets)-1)) {
     turnier <- union(turnier, turnier_single)
   }
 }
+
+
+# master data ---------------------------------------------------------------------------------
+
+# read master data
+stamm <- read_excel(path, sheet = "Stammdaten", col_names = FALSE)
+cn <- stamm %>% slice(2) %>% c(., recursive = TRUE) %>% unname()
+cn <- ifelse(!is.na(as.integer(cn)), paste0("y", cn), cn)
+cn <- gsub(" ", "", cn)
+names(stamm) <- cn
+stamm <- stamm %>%
+  slice(-c(1:2)) %>%
+  pivot_longer(starts_with("y"), "year", values_to = "status") %>%
+  select(c(3,4,10,11,5:9,1:2)) %>%
+  mutate(year = substr(year, 2, 5)) %>%
+  mutate(across(c(5:9), as.numeric))
+
+actives <- stamm %>%
+  filter(year == 2021 & status == "a") %>%
+  select(ID, sex, status, JahreaktivimVerein, Mitgliedseit) %>%
+  rename(n_years = JahreaktivimVerein, since = Mitgliedseit) %>%
+  arrange(desc(n_years)) %>%
+  mutate(ID = factor(ID, levels = ID))
+
+
+
