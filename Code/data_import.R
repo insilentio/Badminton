@@ -136,7 +136,6 @@ for (i in 2:(length(sheets)-1)) {
   }
 }
 
-
 # master data ---------------------------------------------------------------------------------
 
 # read master data
@@ -145,6 +144,8 @@ cn <- stamm %>% slice(2) %>% c(., recursive = TRUE) %>% unname()
 cn <- ifelse(!is.na(as.integer(cn)), paste0("y", cn), cn)
 cn <- gsub(" ", "", cn)
 names(stamm) <- cn
+
+#all members
 stamm <- stamm %>%
   slice(-c(1:2)) %>%
   pivot_longer(starts_with("y"), "year", values_to = "status") %>%
@@ -152,12 +153,13 @@ stamm <- stamm %>%
   mutate(year = substr(year, 2, 5)) %>%
   mutate(across(c(5:9), as.numeric))
 
+#only currently active members
 actives <- stamm %>%
   filter(year == 2021 & status == "a") %>%
-  select(ID, sex, status, JahreaktivimVerein, Mitgliedseit) %>%
+  select(ID, sex, status, JahreaktivimVerein, Mitgliedseit, Vorname) %>%
   rename(n_years = JahreaktivimVerein, since = Mitgliedseit) %>%
   arrange(desc(n_years)) %>%
-  mutate(ID = factor(ID, levels = ID))
+  mutate(ID = factor(ID, levels = ID), Vorname = factor(Vorname, levels = Vorname))
 
 
 
