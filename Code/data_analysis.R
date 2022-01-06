@@ -53,7 +53,17 @@ females
 nmembers <- stamm %>%
   distinct(ID) %>%
   tally()
-
+#med, mean, max, min visits per person
+stats %>%
+  inner_join(actives, by = "ID", keep = TRUE) %>%
+  group_by(ID.y, year) %>%
+  summarise(visits = sum(presence), .groups = "drop_last") %>%
+  summarise(med = median(visits),
+            avg = mean(visits),
+            max = max(visits),
+            min = min(visits),
+            .groups = "keep") %>%
+  arrange(ID.y) 
 
 
 # big figures for tiles in Teilnehmerstatistik ------------------------------------------------
@@ -67,6 +77,12 @@ figs <- tibble(cat = "nr of trainings", value = nr_trainings$n) %>%
   add_row(cat = "ratio of female memberships", value = females$ratio) %>%
   add_row(cat = "number of members", value = nmembers$n)
 
+# number of trainings
+nr_trainings <- stats %>%
+  group_by(year) %>%
+  filter(type == "Training") %>%
+  distinct(week) %>%
+  tally()
 
 # plot section --------------------------------------------------------------------------------
 
@@ -85,19 +101,56 @@ stats %>%
 #generate the plots for the Teilnehmerstatistik
 wf <- actives %>%
   left_join(cumvisits, by = "ID", keep = TRUE) %>%
-  rename(ID = ID.x) %>%
-  select(ID, n) %>%
+  select(Vorname, n) %>%
   waterfall(draw_lines = FALSE, rect_border = NA) +
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
     ggtitle("Kumulierte Teilnahmen der Aktivmitglieder seit 2004")
 wf
 
 mj <- ggplot(actives) +
-  aes(x = ID, y = n_years) +
+  aes(x = Vorname, y = n_years) +
   geom_col(fill = "lightblue") +
-  geom_text(aes(x = ID, y = max(n_years), label = since),
+  geom_text(aes(x = Vorname, y = max(n_years), label = since),
             hjust = 1, angle = 90, colour= "darkgrey") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
         axis.title = element_blank()) +
   ggtitle("Mitgliedschaftsdauer in Jahren (inkl. Beitrittsjahr)")
 mj
+
+pv_data <- stats %>%
+  group_by(ID, year) %>%
+  summarise(visits = sum(presence), .groups = "drop_last") %>%
+  inner_join(actives, by = "ID", keep = TRUE, suffix = c(".x", "")) %>%
+  left_join(nr_trainings, by = "year") %>%
+  select(c(2,3,4,9,10)) %>%
+  mutate(visits = visits/n*100) %>%
+ggplot() +
+  aes(x = Vorname, y = visits) +
+  geom_boxplot(outlier.size = 1, outlier.alpha = .5, coef = 100, width = .5) +
+  stat_summary(fun = mean, geom = "point", size = 1, shape = 3, colour = "blue", show.legend = TRUE) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+        axis.title = element_blank()) +
+  labs(title = "Persönliche Besuchsbandbreite seit 2004",
+       subtitle = "in % der jährlichen Trainingszahl") 
+pv
+ggplotly(pv)
+
+pr <- stats %>%
+  filter(!(ID %in% c("Gäste div.", "Passive div."))) %>%
+  group_by(ID, year) %>%
+  summarise(visits = sum(presence), .groups = "drop_last") %>%
+  left_join(nr_trainings, by = "year") %>%
+  group_by(year) %>%
+  mutate(rank = min_rank(desc(visits))) %>%
+  inner_join(actives, by = "ID", keep = TRUE, suffix = c(".x", "")) %>%
+  select(c(2:6,11)) %>%
+ggplot() +
+  aes(x = Vorname, y = rank) +
+  geom_boxplot(outlier.size = 1, outlier.alpha = .5, coef = 100, width = .5) +
+  stat_summary(fun = mean, geom = "point", size = 1, shape = 3, colour = "blue", show.legend = TRUE) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+        axis.title = element_blank()) +
+  labs(title = "Persönliche Rankingbandbreite seit 2004",
+       subtitle = "") +
+  scale_y_continuous(limits =c(1,21), breaks = seq(1,21,2))
+pr
