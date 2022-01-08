@@ -93,7 +93,7 @@ for (i in 2:(length(sheets)-1)) {
           fill_ins <- sample(mw$week, ma[j,]$interpoliert, replace = F)
         }
         else {
-          fill_ins <- mw$week * ma[j,]$interpoliert
+          fill_ins <- mw$week
         }
         single <- single %>% 
           mutate(presence = if_else(ID == ma[j,]$ID & week %in% fill_ins,1,presence))
@@ -112,7 +112,7 @@ for (i in 2:(length(sheets)-1)) {
           fill_ins <- sample(mw$week, miss_gp$interpoliert, replace = F)
         }
         else {
-          fill_ins <- mw$week * ma[j,]$interpoliert
+          fill_ins <- mw$week
         }
         #how many attendances should be distributed per training?
         nr_att <- floor(ma[j,]$interpoliert/length(mw$week))
@@ -140,10 +140,10 @@ for (i in 2:(length(sheets)-1)) {
 
 # read master data
 stamm <- read_excel(path, sheet = "Stammdaten", col_names = FALSE)
-cn <- stamm %>% slice(2) %>% c(., recursive = TRUE) %>% unname()
-cn <- ifelse(!is.na(as.integer(cn)), paste0("y", cn), cn)
-cn <- gsub(" ", "", cn)
-names(stamm) <- cn
+cn2 <- stamm %>% slice(2) %>% c(., recursive = TRUE) %>% unname()
+cn2 <- ifelse(!is.na(as.integer(cn2)), paste0("y", cn2), cn2)
+cn2 <- gsub(" ", "", cn2)
+names(stamm) <- cn2
 
 #all members
 stamm <- stamm %>%
@@ -151,7 +151,7 @@ stamm <- stamm %>%
   pivot_longer(starts_with("y"), "year", values_to = "status") %>%
   select(c(3,4,10,11,5:9,1:2)) %>%
   mutate(year = substr(year, 2, 5)) %>%
-  mutate(across(c(5:9), as.numeric))
+  mutate(across(c(3, 5:9), as.numeric))
 
 #only currently active members
 actives <- stamm %>%
