@@ -41,6 +41,9 @@ for (i in 2:(length(sheets)-1)) {
     mutate(type = if_else(sum>0,"Training", "Ferien"))  %>%
     mutate(type = if_else(week=="99", "Turnier", type))
   
+  # move to next iteration if no trainings available (e.g. current year)
+  if ((trainings %>% summarise(sum = sum(sum)))$sum == 0) next
+  
   #combine the 2 datasets. Col. "Trainings" can be dropped later, but is used for imputation in next step
   #some entries have to be filtered out as they contain aggregated values already (e.g. "Aktive")
   single <- left_join(single, trainings, by="week") %>%
@@ -61,12 +64,12 @@ for (i in 2:(length(sheets)-1)) {
   #values are then assigned randomly to missing weeks
   n_train <- single %>%
     group_by(type, week) %>%
-    summarise(n=n_distinct(week)) %>%
+    summarise(n=n_distinct(week), .groups = "drop_last") %>%
     summarise(n=sum(n), .groups = "drop") %>%
     filter(type=="Training")
   data_train <- single %>%
     group_by(Trainings, week) %>% 
-    summarise(n=n_distinct(week)) %>%
+    summarise(n=n_distinct(week), .groups = "drop_last") %>%
     summarise(n=sum(n), .groups = "drop") %>%
     filter(Trainings==1)
   
@@ -91,9 +94,8 @@ for (i in 2:(length(sheets)-1)) {
         # hence special treatment needed
         if (length(mw$week) > 1) {
           fill_ins <- sample(mw$week, ma[j,]$interpoliert, replace = F)
-        }
-        else {
-          fill_ins <- mw$week
+        } else {
+          fill_ins <- mw$week * ma[j,]$interpoliert
         }
         single <- single %>% 
           mutate(presence = if_else(ID == ma[j,]$ID & week %in% fill_ins,1,presence))
@@ -110,15 +112,23 @@ for (i in 2:(length(sheets)-1)) {
         
         if (length(mw$week) > 1) {
           fill_ins <- sample(mw$week, miss_gp$interpoliert, replace = F)
-        }
-        else {
-          fill_ins <- mw$week
+        } else {
+          fill_ins <- mw$week * (ma[j,]$interpoliert > 0)
         }
         #how many attendances should be distributed per training?
+        #in average:
         nr_att <- floor(ma[j,]$interpoliert/length(mw$week))
-        single <- single %>%
-          mutate(presence = if_else(ID == ma[j,]$ID & week %in% fill_ins, nr_att, presence))
+        trs <- rep(nr_att, length(fill_ins))
+        #now check for leftovers (from flooring for average) and distribute randomly
+        while (ma[j,]$interpoliert - sum(trs) != 0) {
+          k <- sample(1:length(trs),1)
+          trs[k] <- trs[k] + 1
+        }
 
+        single <- single %>%
+          filter(ID == ma[j,]$ID & week %in% fill_ins) %>%
+          mutate(presence = trs) %>%
+          union(single %>% filter(!(ID == ma[j,]$ID & week %in% fill_ins)))
       }
     }
   }
