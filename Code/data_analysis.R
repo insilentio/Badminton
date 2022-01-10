@@ -1,5 +1,6 @@
 library(waterfalls)
 library(gridExtra)
+library(scales)
 
 source("Code/data_import.R")
 
@@ -59,7 +60,7 @@ maxact <- (max(actives$n_years) %/% 10 +1) * 10
 minyear <- min(stats$year)
 maxyear <- max(stats$year)
 
-kpi_desc <- c("Mittelwert", "Standardabweichung", "Anz. Trainings", "Trainingsbesuche", "Trainings/Aktivmitglied")
+kpi_desc <- c("Mittelwert", "Standardabweichung", "Trainingsbesuche", "Anz. Trainings", "Trainings/Aktivmitglied")
 #KPIs last year
 kpi <- stats %>%
   filter(year == maxyear & type == "Training") %>%
@@ -253,17 +254,14 @@ present <- present %>%
 #plots
 c1 <- grob()
 
-c2 <- 
-  ggplot(kpi) +
+c2 <- ggplot(kpi) +
   aes(x = 1, y = idx) +
   geom_text(aes(label = paste0(desc, ": ", values)), size = 3) +
-  scale_y_continuous(limits = c(-2, 6)) +
+  scale_y_continuous(limits = c(-1, 6)) +
   mytheme +
   theme(panel.grid = element_blank(),
         axis.text = element_blank(), 
-        axis.text.x = element_blank(),
-        panel.grid.major.x = element_line(),
-        panel.grid.minor.x = element_line(),) +
+        axis.text.x = element_blank()) +
   labs(title = "Jahres-KPIs")
 
 c3 <- stats %>%
@@ -272,7 +270,9 @@ c3 <- stats %>%
   group_by(week, train) %>%
   summarise(presence = sum(presence), .groups  = "drop") %>%
   mutate(cum = cumsum(presence), roll = cum/cumsum(train)) %>%
+  mutate(presence = ifelse(presence == 0, NA, presence)) %>%
   pivot_longer(cols = c("presence", "roll"), names_to = "type", values_to = "value") %>%
+  na.omit() %>%
 ggplot() +
   aes(x = week, y = value, colour = type) +
   geom_line() +
@@ -281,9 +281,12 @@ ggplot() +
         legend.position = c(.2,.92),
         legend.direction = "horizontal",
         panel.grid.major.x = element_line(),
-        panel.grid.minor.x = element_line(),) +
-  scale_y_continuous(limits = c(0,13), breaks = seq(0,14,2)) +
-  scale_x_continuous(limits = c(1,52), breaks = seq(10,50,10),
+        panel.grid.minor.x = element_line(),
+        axis.text.x = element_text(angle = 0, vjust = 0, hjust = 0.5)) +
+  scale_y_continuous(limits = c(0,13),
+                     breaks = seq(0,14,2)) +
+  scale_x_continuous(limits = c(1,52),
+                     breaks = seq(0,50,10),
                      minor_breaks = seq(2,50,2)) +
   scale_colour_manual(labels = c("Anz. Besucher", "kum. Mittelwert"),
                       values = c("purple", "pink"))
@@ -310,11 +313,11 @@ c5 <- ggplot(present) +
   geom_col() +
   geom_text(aes(label = presence),
             position = position_stack(vjust = .5),
-            size = 3) +
+            size = 2) +
   geom_text(aes(x = year, y = tot, label = tot),
             nudge_y = 10,
             inherit.aes = FALSE,
-            size = 3) +
+            size = 2) +
   geom_line(aes(y = mean*scaler), color = "pink") +
   mytheme +
   theme(axis.title.y = element_text(),
@@ -334,7 +337,7 @@ c6 <- ggplot(present) +
   geom_col(position = position_fill())  +
   geom_text(aes(label = round(presence/tot, 2)),
             position = position_fill(vjust = .5),
-            size = 3) +
+            size = 2) +
   mytheme +
   theme(axis.title.y = element_text(),
         legend.position = "none") +
