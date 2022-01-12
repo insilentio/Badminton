@@ -114,16 +114,3 @@ figs <- tibble(cat = "Trainings", value = all_trainings$n,
           head = "seit Gründung", .after = 5)%>%
   mutate(cat = factor(cat, levels = cat))
 
-
-# plot section --------------------------------------------------------------------------------
-
-#first page
-source("Code/plots_page1.R")
-
-# second page
-source("Code/plots_page2.R")
-
-# save both pages into one pdf
-pdf("Output/Teilnehmerstatistik.pdf", width = 29.7/2.54, height = 21/2.54)
-lapply(list(gridplot1, gridplot2), grid.arrange)
-dev.off()
