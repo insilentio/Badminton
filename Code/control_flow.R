@@ -1,11 +1,16 @@
+
+#load libraries for the source files
+
 library(waterfalls)
 library(gridExtra)
 library(scales)
 library(cowplot)
 library(grid)
 library(gtable)
+library(tidyverse)
+library(readxl)
 
-
+# general stuff
 mytheme <- theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
         axis.title = element_blank(),
