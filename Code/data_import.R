@@ -1,5 +1,3 @@
-library(tidyverse)
-library(readxl)
 
 Sys.setlocale("LC_ALL", 'de_CH.UTF-8')
 path <- "Data/BCT_Teilnehmerliste.xlsx"
@@ -152,7 +150,7 @@ for (i in 2:(length(sheets)-1)) {
 # read master data
 stamm <- read_excel(path, sheet = "Stammdaten", col_names = FALSE)
 cn2 <- stamm %>% slice(2) %>% c(., recursive = TRUE) %>% unname()
-cn2 <- ifelse(!is.na(as.integer(cn2)), paste0("y", cn2), cn2)
+cn2 <- ifelse(!grepl("[^[:digit:]]", cn2), paste0("y", cn2), cn2)
 cn2 <- gsub(" ", "", cn2)
 names(stamm) <- cn2
 
