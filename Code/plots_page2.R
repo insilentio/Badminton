@@ -13,16 +13,6 @@ stats %>%
   scale_y_continuous(breaks = c(0:12), limits = c(0,12))
 
 #generate the plots for the Teilnehmerstatistik
-mytheme <- theme_minimal() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
-        axis.title = element_blank(),
-        panel.grid.major.x = element_blank(),
-        panel.grid.minor.x = element_blank(),
-        text = element_text(colour = "darkgrey"),
-        plot.title = element_text(colour = "darkgrey", size = 12, hjust = 0.5),
-        plot.subtitle = element_text(colour = "darkgrey", size = 10, hjust = 0.5),
-        plot.margin = unit(rep(.5,4), "cm"),
-        plot.background = element_rect(colour = "darkgrey", fill=NA, size=.5) )
 
 p1 <- actives %>%
   left_join(cumvisits, by = "ID", keep = TRUE) %>%
@@ -59,7 +49,7 @@ p3 <- stats %>%
   stat_summary(fun = mean, geom = "point", size = 1, shape = 3, colour = "steelblue", show.legend = TRUE) +
   mytheme +
   labs(title = "Persönliche Besuchsbandbreite seit 2004",
-       subtitle = "in % der jährlichen Trainingszahl") +
+       subtitle = "in % der Jahresanzahl Trainings") +
   scale_y_continuous(limits = c(0, 100), breaks = seq(0,100,20), minor_breaks = seq(0,100,5))
 
 # ggplotly(p3)
@@ -95,9 +85,12 @@ p5c <- ggplot(figs) +
   geom_text(size = 3, colour = "darkgrey") +
   theme_void()
 
-p5 <- grid.arrange(p5a,p5b,p5c, nrow = 3)
+p5 <- arrangeGrob(p5a,p5b,p5c, nrow = 3)
 
 #arrange everything on one page
-gridplot2 <- grid.arrange(p1, p2, p3, p4, p5,
+gridplot2 <- arrangeGrob(p1, p2, p3, p4, p5,
                           heights = c(4,4,1),
                           layout_matrix = rbind(c(1,2), c(3,4), c(5)))
+# gridplot2 <- grid.arrange(p1, p2, p3, p4, p5,
+#                           heights = c(4,4,1),
+#                           layout_matrix = rbind(c(1,2), c(3,4), c(5)))
