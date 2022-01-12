@@ -172,5 +172,3 @@ actives <- stamm %>%
   arrange(desc(n_years)) %>%
   mutate(ID = factor(ID, levels = ID), Vorname = factor(Vorname, levels = Vorname))
 
-
-

@@ -1,9 +1,3 @@
-library(waterfalls)
-library(gridExtra)
-library(scales)
-
-source("Code/data_import.R")
-
 
 # prep some values ----------------------------------------------------------------------------
 
@@ -72,7 +66,8 @@ kpi <- stats %>%
     bind_cols(nr_tr = (nr_trainings %>% filter(year == maxyear))$n) %>%
     bind_cols(tr_per_active = round(.$visits/nrow(actives), 2)) %>%
   pivot_longer(everything(), names_to = "cat", values_to = "values") %>%
-  mutate (desc = kpi_desc, idx = 5:1)
+  mutate(desc = kpi_desc, idx = 5:1) %>%
+  mutate(values = as.character(values))
 
 
 #med, mean, max, min visits per person
@@ -122,13 +117,11 @@ figs <- tibble(cat = "Trainings", value = all_trainings$n,
 
 # plot section --------------------------------------------------------------------------------
 
-#second page
+#first page
 source("Code/plots_page1.R")
 
-# first page
-# data prep
+# second page
 source("Code/plots_page2.R")
-
 
 # save both pages into one pdf
 pdf("Output/Teilnehmerstatistik.pdf", width = 29.7/2.54, height = 21/2.54)
