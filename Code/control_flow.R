@@ -5,6 +5,18 @@ library(cowplot)
 library(grid)
 library(gtable)
 
+
+mytheme <- theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+        axis.title = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        text = element_text(colour = "darkgrey"),
+        plot.title = element_text(colour = "darkgrey", size = 12, hjust = 0.5),
+        plot.subtitle = element_text(colour = "darkgrey", size = 10, hjust = 0.5),
+        plot.margin = unit(rep(.5,4), "cm"),
+        plot.background = element_rect(colour = "darkgrey", fill=NA, size=.5) )
+
 #import data
 source("Code/data_import.R")
 
