@@ -9,26 +9,27 @@ present <- stats %>%
                          ID == "Gäste div." ~ "Gäste",
                          ID == "Passive div." ~ "Passive")) %>%
   group_by(year, cat) %>% 
-  summarise(presence = sum(presence))
+  summarise(presence = sum(presence), .groups = "drop")
 
 totals <- stats %>%
   filter(type == "Training") %>%
   group_by(year, week) %>%
   summarise(presence = sum(presence), .groups = "drop_last") %>%
-  summarise(tot = sum(presence), mean = mean(presence))
+  summarise(tot = sum(presence), mean = mean(presence), .groups = "drop")
 
 present <- present %>%
   left_join(totals, by = "year")
 
-
 #plots
-stats %>%
-  filter(year == maxyear) %>%
-  mutate(presence = ifelse(presence == 0, NA, presence),
-         presence = ifelse(type == "Ferien", "F", presence)) %>%
-  left_join(stamm, by = c("ID", "year")) %>%
-  select(ID, Vorname, Nachname, week, presence) %>%
-  pivot_wider(id_cols = c(1:4), names_from = week, values_from = presence)
+#try to replicate excel table. Not so easy, therefore for the moment switched to a solution
+#where excel table must be imported as a PNG
+# stats %>%
+#   filter(year == maxyear) %>%
+#   mutate(presence = ifelse(presence == 0, NA, presence),
+#          presence = ifelse(type == "Ferien", "F", presence)) %>%
+#   left_join(stamm, by = c("ID", "year")) %>%
+#   select(ID, Vorname, Nachname, week, presence) %>%
+#   pivot_wider(id_cols = c(1:4), names_from = week, values_from = presence)
 
 c1 <- ggdraw() +
   draw_image("Data/BCT21.png")
@@ -75,7 +76,7 @@ c3 <- stats %>%
 c4 <- stats %>%
   filter(year %in% c(maxyear, maxyear-1)) %>%
   group_by(year, ID) %>%
-  summarise(presence = sum(presence)) %>%
+  summarise(presence = sum(presence), .groups = "drop") %>%
   ggplot() +
   aes(x = as.factor(year), y = presence) +
   geom_boxplot(width = .5)  +
