@@ -22,18 +22,28 @@ present <- present %>%
 
 
 #plots
-c1 <- grob()
+stats %>%
+  filter(year == maxyear) %>%
+  mutate(presence = ifelse(presence == 0, NA, presence),
+         presence = ifelse(type == "Ferien", "F", presence)) %>%
+  left_join(stamm, by = c("ID", "year")) %>%
+  select(ID, Vorname, Nachname, week, presence) %>%
+  pivot_wider(id_cols = c(1:4), names_from = week, values_from = presence)
 
-c2 <- ggplot(kpi) +
-  aes(x = 1, y = idx) +
-  geom_text(aes(label = paste0(desc, ": ", values)), size = 3) +
-  scale_y_continuous(limits = c(-1, 6)) +
-  mytheme +
-  theme(panel.grid = element_blank(),
-        axis.text = element_blank(), 
-        axis.text.x = element_blank()) +
-  labs(title = "Jahres-KPIs")
+c1 <- ggdraw() +
+  draw_image("Data/BCT21.png")
 
+c2 <- tableGrob(kpi %>% select(3, 2),
+                theme=ttheme_minimal(base_size = 6, padding = unit(c(5,2), "mm"),
+                                     core = list(fg_params = list(hjust = c(rep(0, 5), rep(1, 5)), 
+                                                                  x = c(rep(0.1, 5), rep(.8, 5))))),
+                rows=NULL, cols = NULL)
+title <- textGrob("Jahres-KPIs", gp = gpar(col = "darkgrey"))
+c2 <- gtable_add_rows(c2,
+                        heights = grobHeight(title) + unit(2,"lines"),
+                        pos = 0)
+c2 <- gtable_add_grob(c2, list(title), 1, 1, 1, ncol(c2))
+  
 c3 <- stats %>%
   filter(year == maxyear) %>%
   mutate(train = ifelse(type == "Training", 1, 0)) %>%
@@ -57,7 +67,7 @@ c3 <- stats %>%
                      breaks = seq(0,14,2)) +
   scale_x_continuous(limits = c(1,52),
                      breaks = seq(0,50,10),
-                     minor_breaks = seq(2,50,2)) +
+                     minor_breaks = seq(2,52,2)) +
   scale_colour_manual(labels = c("Anz. Besucher", "kum. Mittelwert"),
                       values = c("purple", "pink"))
 
@@ -71,6 +81,7 @@ c4 <- stats %>%
   geom_boxplot(width = .5)  +
   stat_summary(fun = mean, geom = "point", size = 1, shape = 3, colour = "steelblue", show.legend = TRUE) +
   mytheme +
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5)) +
   scale_y_continuous(limits = c(0,40),
                      breaks = seq(0,40,10),
                      minor_breaks = seq(0,40,2)) +
@@ -117,15 +128,23 @@ c6 <- ggplot(present) +
   scale_fill_manual(values = c("steelblue", "limegreen", "darkred")) +
   labs(title = "Teilnehmerentwicklung nach Kategorien (relativ)")
 
+leg <- ggplot(present) +
+  aes(x = year, y = presence, fill = cat) +
+  geom_col(position = position_fill()) +
+  theme(legend.title = element_blank(),
+        legend.key.size = unit(c(.3), units = "cm"),
+        legend.text = element_text(size = 8)) +
+  scale_fill_manual(values = c("steelblue", "limegreen", "darkred"))
+leg <- get_legend(leg)
 
-
-c2ga <- grid.arrange(c2, c3, c4,
-                     widths = c(2,8,2))
-
-gridplot1 <- grid.arrange(c1, c2ga, c5, c6,
+#arrange everything on one page
+gridplot1 <- arrangeGrob(c1,
+                          arrangeGrob(c2, c3, c4, widths = c(2,6,2)),
+                          arrangeGrob(c5, leg, c6, widths = c(4.5, 1, 4.5)),
                           heights = c(5,2,3),
-                          layout_matrix = rbind(c(1), c(2), c(5,6)))
-
-
-# ggsave("Teilnehmerstatistik.pdf", gridplot1, "pdf", "Output",
-#        width = 29.7, height = 21, units = "cm", dpi = "print")
+                          layout_matrix = rbind(c(1), c(2), c(3)))
+# gridplot1 <- grid.arrange(c1,
+#                           arrangeGrob(c2, c3, c4, widths = c(2,6,2)),
+#                           arrangeGrob(c5, leg, c6, widths = c(4.5, 1, 4.5)),
+#                           heights = c(5,2,3),
+#                           layout_matrix = rbind(c(1), c(2), c(3)))
