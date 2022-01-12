@@ -71,7 +71,7 @@ kpi <- stats %>%
 
 
 #med, mean, max, min visits per person
-stats %>%
+summaries <- stats %>%
   inner_join(actives, by = "ID", keep = TRUE) %>%
   group_by(ID.y, year) %>%
   summarise(visits = sum(presence), .groups = "drop_last") %>%
@@ -83,16 +83,13 @@ stats %>%
   arrange(ID.y)
 
 #mean attendance per year, per person
-stats %>%
+mean_pp <- stats %>%
   filter(!grepl("Gäste", ID) & !grepl("Passive", ID)) %>% 
   filter(type=="Training") %>%
   group_by(ID,year) %>% 
-  summarise(sum=sum(presence)) %>% 
-  group_by(ID) %>% 
+  summarise(sum=sum(presence), .groups = "drop_last") %>% 
   summarise(mean=mean(sum), tot=mean*n()) %>%
-  arrange(-mean) %>% 
-  print(n=60)
-
+  arrange(-mean)
 
 # big figures for tiles in Teilnehmerstatistik ------------------------------------------------
 
