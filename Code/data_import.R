@@ -1,6 +1,6 @@
 
 Sys.setlocale("LC_ALL", 'de_CH.UTF-8')
-path <- "Data/BCT_Teilnehmerliste.xlsx"
+path <- "Data/BCT_Excel.xlsx"
 #(symbolic link currently gets deleted by NAS sync every day - must be manually re-created first)
 
 #vector with column names. 99 stands for Turnier
@@ -13,7 +13,7 @@ events <- c(as.character(c(1:52, 99)))
 #read the data
 sheets <- excel_sheets(path)
 if (exists("stats")) rm(stats)
-for (i in 2:(length(sheets)-1)) {
+for (i in 1:(length(sheets)-1)) {
   single <- read_excel(path, sheet = sheets[i], range="A5:BG38", col_names = cn)
 
   #tidy it up
@@ -23,11 +23,11 @@ for (i in 2:(length(sheets)-1)) {
           replace(. == "x", "1") %>%
           replace(. == "Total Trainings", "Trainings") %>%
           mutate(year=sheets[i]) %>%
-          select("ID", "year", events) %>%
+          select("ID", "year", all_of(events)) %>%
           mutate(across(1, as.character)) %>%
           mutate(across(c(2:55), as.numeric)) %>%
           filter(!is.na(ID)) %>%
-          pivot_longer(events, names_to="week", values_to = "presence") %>%
+          pivot_longer(all_of(events), names_to="week", values_to = "presence") %>%
           mutate(across("presence", ~if_else(is.na(presence),0,presence)))
   
   #let's evaluate if respective week was vacation or not
