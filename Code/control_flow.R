@@ -9,6 +9,8 @@ library(grid)
 library(gtable)
 library(tidyverse)
 library(readxl)
+library(pdftools)
+library(png)
 
 # general stuff
 mytheme <- theme_minimal() +
@@ -17,9 +19,9 @@ mytheme <- theme_minimal() +
         panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
         text = element_text(colour = "darkgrey"),
-        plot.title = element_text(colour = "darkgrey", size = 12, hjust = 0.5),
-        plot.subtitle = element_text(colour = "darkgrey", size = 10, hjust = 0.5),
-        plot.margin = unit(rep(.5,4), "cm"),
+        plot.title = element_text(colour = "darkgrey", size = 11, hjust = 0.5),
+        plot.subtitle = element_text(colour = "darkgrey", size = 9, hjust = 0.5),
+        plot.margin = unit(rep(.3,4), "cm"),
         plot.background = element_rect(colour = "darkgrey", fill=NA, size=.5) )
 
 #import data
