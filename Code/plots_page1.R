@@ -31,20 +31,24 @@ present <- present %>%
 #   select(ID, Vorname, Nachname, week, presence) %>%
 #   pivot_wider(id_cols = c(1:4), names_from = week, values_from = presence)
 
-c1 <- ggdraw() +
-  draw_image("Data/BCT21.png")
+pdf_render_page("Data/BCT_Excel.pdf", dpi = 300) %>%
+  writePNG("Output/BCT_Excel.png")
 
-c2 <- tableGrob(kpi %>% select(3, 2),
-                theme=ttheme_minimal(base_size = 6, padding = unit(c(5,2), "mm"),
-                                     core = list(fg_params = list(hjust = c(rep(0, 5), rep(1, 5)), 
-                                                                  x = c(rep(0.1, 5), rep(.8, 5))))),
-                rows=NULL, cols = NULL)
-title <- textGrob("Jahres-KPIs", gp = gpar(col = "darkgrey"))
-c2 <- gtable_add_rows(c2,
-                        heights = grobHeight(title) + unit(2,"lines"),
-                        pos = 0)
-c2 <- gtable_add_grob(c2, list(title), 1, 1, 1, ncol(c2))
-  
+c1 <- ggdraw() +
+  draw_image("Output/BCT_Excel.png")
+
+c2 <- ggplot(kpi) +
+    aes(y = idx) +
+    geom_text(aes(x = 1, label = paste0(desc, ": ")), size = 3, hjust = 0) +
+    geom_text(aes(x = 2, label = values), size = 3, hjust = 1) +
+    scale_y_continuous(limits = c(-1, 6)) +
+    # scale_x_continuous(limits = c(0.75,2.25)) +
+    mytheme +
+    theme(panel.grid = element_blank(),
+          axis.text = element_blank(), 
+          axis.text.x = element_blank()) +
+    labs(title = "Jahres-KPIs")
+
 c3 <- stats %>%
   filter(year == maxyear) %>%
   mutate(train = ifelse(type == "Training", 1, 0)) %>%
@@ -132,6 +136,7 @@ c6 <- ggplot(present) +
 leg <- ggplot(present) +
   aes(x = year, y = presence, fill = cat) +
   geom_col(position = position_fill()) +
+  mytheme +
   theme(legend.title = element_blank(),
         legend.key.size = unit(c(.3), units = "cm"),
         legend.text = element_text(size = 8)) +
@@ -144,8 +149,8 @@ gridplot1 <- arrangeGrob(c1,
                           arrangeGrob(c5, leg, c6, widths = c(4.5, 1, 4.5)),
                           heights = c(5,2,3),
                           layout_matrix = rbind(c(1), c(2), c(3)))
-# gridplot1 <- grid.arrange(c1,
-#                           arrangeGrob(c2, c3, c4, widths = c(2,6,2)),
-#                           arrangeGrob(c5, leg, c6, widths = c(4.5, 1, 4.5)),
-#                           heights = c(5,2,3),
-#                           layout_matrix = rbind(c(1), c(2), c(3)))
+# grid.arrange(c1,
+#               arrangeGrob(c2, c3, c4, widths = c(2,6,2)),
+#               arrangeGrob(c5, leg, c6, widths = c(4.5, 1, 4.5)),
+#               heights = c(5,2,3),
+#               layout_matrix = rbind(c(1), c(2), c(3)))
