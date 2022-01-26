@@ -61,20 +61,25 @@ c3 <- stats %>%
   ggplot() +
   aes(x = week, y = value, colour = type) +
   geom_line() +
+  xlab(label = "Woche") +
+  scale_y_continuous(limits = c(0,13),
+                     breaks = seq(0,14,2),
+                     expand = c(0,0)) +
+  scale_x_continuous(limits = c(1,52),
+                     breaks = c(1,10, 20, 30, 40, 50),
+                     minor_breaks = seq(2,52,2),
+                     expand = c(.02,0)) +
+  scale_colour_manual(labels = c("Anz. Besucher", "kum. Mittelwert"),
+                      values = c("purple", "pink")) +
   mytheme +
   theme(legend.title = element_blank(),
-        legend.position = c(.2,.92),
+        legend.position = c(.2,.95),
         legend.direction = "horizontal",
         panel.grid.major.x = element_line(),
         panel.grid.minor.x = element_line(),
-        axis.text.x = element_text(angle = 0, vjust = 0, hjust = 0.5)) +
-  scale_y_continuous(limits = c(0,13),
-                     breaks = seq(0,14,2)) +
-  scale_x_continuous(limits = c(1,52),
-                     breaks = seq(0,50,10),
-                     minor_breaks = seq(2,52,2)) +
-  scale_colour_manual(labels = c("Anz. Besucher", "kum. Mittelwert"),
-                      values = c("purple", "pink"))
+        axis.text.x = element_text(angle = 0, vjust = 0, hjust = 0.5),
+        axis.title.x = element_text(vjust = 6, hjust = .5),
+        plot.margin = unit(c(.3, .3, 0, .3), "cm"))
 
 
 c4 <- stats %>%
@@ -123,25 +128,22 @@ c6 <- ggplot(present) +
   geom_col(position = position_fill())  +
   geom_text(aes(label = round(presence/tot, 2)),
             position = position_fill(vjust = .5),
-            size = 2) +
-  mytheme +
-  theme(axis.title.y = element_text(),
-        legend.position = "none") +
+            size = 2)+
   labs(fill = "Kategorie", y = "Ant. Teilnehmer") +
   scale_x_continuous(breaks = c(minyear:maxyear)) +
   scale_y_continuous(labels = percent_format()) +
   scale_fill_manual(values = c("steelblue", "limegreen", "darkred")) +
-  labs(title = "Teilnehmerentwicklung nach Kategorien (relativ)")
+  labs(title = "Teilnehmerentwicklung nach Kategorien (relativ)") +
+  mytheme
+leg <- get_legend(c6 + theme(legend.title = element_blank(),
+                             legend.key.size = unit(c(.3), units = "cm"),
+                             legend.text = element_text(size = 8),
+                             legend.direction = "vertical",
+                             legend.background = element_rect(colour = "darkgrey")))
+c6 <- c6 + theme(axis.title.y = element_text(),
+                 legend.position = "none") 
 
-leg <- ggplot(present) +
-  aes(x = year, y = presence, fill = cat) +
-  geom_col(position = position_fill()) +
-  mytheme +
-  theme(legend.title = element_blank(),
-        legend.key.size = unit(c(.3), units = "cm"),
-        legend.text = element_text(size = 8)) +
-  scale_fill_manual(values = c("steelblue", "limegreen", "darkred"))
-leg <- get_legend(leg)
+ggdraw(leg)
 
 #arrange everything on one page
 gridplot1 <- arrangeGrob(c1,
