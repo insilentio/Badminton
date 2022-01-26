@@ -68,7 +68,7 @@ c3 <- stats %>%
   scale_x_continuous(limits = c(1,52),
                      breaks = c(1,10, 20, 30, 40, 50),
                      minor_breaks = seq(2,52,2),
-                     expand = c(.02,0)) +
+                     expand = c(0,0)) +
   scale_colour_manual(labels = c("Anz. Besucher", "kum. Mittelwert"),
                       values = c("purple", "pink")) +
   mytheme +
