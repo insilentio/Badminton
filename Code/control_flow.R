@@ -11,6 +11,7 @@ library(tidyverse)
 library(readxl)
 library(pdftools)
 library(png)
+library(magick)
 
 # general stuff
 mytheme <- theme_minimal() +
@@ -22,7 +23,7 @@ mytheme <- theme_minimal() +
         plot.title = element_text(colour = "darkgrey", size = 11, hjust = 0.5),
         plot.subtitle = element_text(colour = "darkgrey", size = 9, hjust = 0.5),
         plot.margin = unit(rep(.3,4), "cm"),
-        plot.background = element_rect(colour = "darkgrey", fill=NA, size=.5) )
+        plot.background = element_rect(colour = "darkgrey", fill=NA, linewidth =.5) )
 
 #import data
 source("Code/data_import.R")
@@ -38,6 +39,7 @@ source("Code/plots_page2.R")
 
 
 # save both pages into one pdf
-pdf("Output/Teilnehmerstatistik.pdf", width = 29.7/2.54, height = 21/2.54)
-lapply(list(gridplot1, gridplot2), grid.arrange)
-dev.off()
+  pdf("Output/Teilnehmerstatistik.pdf", width = 29.7/2.54, height = 21/2.54)
+  lapply(list(gridplot1, gridplot2), grid.arrange)
+  dev.off()
+  
