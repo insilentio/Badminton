@@ -148,15 +148,15 @@ for (i in 1:(length(sheets)-1)) {
 # master data ---------------------------------------------------------------------------------
 
 # read master data
-stamm <- read_excel(path, sheet = "Stammdaten", col_names = FALSE)
-cn2 <- stamm %>% slice(2) %>% c(., recursive = TRUE) %>% unname()
+stamm <- read_excel(path, sheet = "Stammdaten", col_names = TRUE)
+cn2 <- names(stamm)
 cn2 <- ifelse(!grepl("[^[:digit:]]", cn2), paste0("y", cn2), cn2)
 cn2 <- gsub(" ", "", cn2)
 names(stamm) <- cn2
 
 #all members
 stamm <- stamm %>%
-  slice(-c(1:2)) %>%
+  slice(-1) %>%
   pivot_longer(starts_with("y"), "year", values_to = "status") %>%
   select(c(3,4,10,11,5:9,1:2)) %>%
   mutate(year = substr(year, 2, 5)) %>%
