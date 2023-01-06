@@ -164,7 +164,7 @@ stamm <- stamm %>%
 
 #only currently active members
 actives <- stamm %>%
-  filter(year == 2021 & status == "a") %>%
+  filter(year == maxyear & status == "a") %>%
   select(ID, sex, status, JahreaktivimVerein, Mitgliedseit, Vorname) %>%
   rename(n_years = JahreaktivimVerein, since = Mitgliedseit) %>%
   arrange(desc(n_years)) %>%
