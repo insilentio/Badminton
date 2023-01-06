@@ -54,7 +54,7 @@ maxact <- (max(actives$n_years) %/% 10 +1) * 10
 minyear <- min(stats$year)
 maxyear <- max(stats$year)
 
-kpi_desc <- c("Mittelwert", "Standardabweichung", "Trainingsbesuche", "Anz. Trainings", "Trainings/Aktivmitglied")
+kpi_desc <- c("Mittelwert", "Standardabweichung", "Trainingsbesuche", "Anz. Trainings", "Trainings/Aktivmitgl.")
 #KPIs last year
 kpi <- stats %>%
   filter(year == maxyear & type == "Training") %>%

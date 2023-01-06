@@ -22,7 +22,7 @@ present <- present %>%
 
 #plots
 #try to replicate excel table. Not so easy, therefore for the moment switched to a solution
-#where excel table must be imported as a PNG
+#where excel table must be imported as a PDF
 # stats %>%
 #   filter(year == maxyear) %>%
 #   mutate(presence = ifelse(presence == 0, NA, presence),
@@ -147,7 +147,7 @@ ggdraw(leg)
 
 #arrange everything on one page
 gridplot1 <- arrangeGrob(c1,
-                          arrangeGrob(c2, c3, c4, widths = c(2,6,2)),
+                          arrangeGrob(c2, c3, c4, widths = c(1.6, 6.7, 1.7)),
                           arrangeGrob(c5, leg, c6, widths = c(4.5, 1, 4.5)),
                           heights = c(5,2,3),
                           layout_matrix = rbind(c(1), c(2), c(3)))
