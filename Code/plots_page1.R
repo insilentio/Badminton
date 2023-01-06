@@ -39,10 +39,10 @@ c1 <- ggdraw() +
 
 c2 <- ggplot(kpi) +
     aes(y = idx) +
-    geom_text(aes(x = 1, label = paste0(desc, ": ")), size = 3, hjust = 0) +
-    geom_text(aes(x = 2, label = values), size = 3, hjust = 1) +
+    geom_text(aes(x = .35, label = desc), size = 2, hjust = 0) +
+    geom_text(aes(x = 0.2, label = values), size = 3, hjust = 0.5) +
     scale_y_continuous(limits = c(-1, 6)) +
-    # scale_x_continuous(limits = c(0.75,2.25)) +
+    scale_x_continuous(limits = c(0, 1)) +
     mytheme +
     theme(panel.grid = element_blank(),
           axis.text = element_blank(), 
