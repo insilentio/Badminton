@@ -41,36 +41,35 @@ p3 <- stats %>%
   summarise(visits = sum(presence), .groups = "drop_last") %>%
   inner_join(actives, by = "ID", keep = TRUE, suffix = c(".x", "")) %>%
   left_join(nr_trainings, by = "year") %>%
-  select(c(2,3,4,9,10)) %>%
+  select(ID, visits, Vorname, n) %>%
   mutate(visits = visits/n*100) %>%
   ggplot() +
-  aes(x = Vorname, y = visits) +
-  geom_boxplot(outlier.size = 1, outlier.alpha = .5, coef = 100, width = .5) +
-  stat_summary(fun = mean, geom = "point", size = 1, shape = 3, colour = "steelblue", show.legend = TRUE) +
-  mytheme +
-  labs(title = "Persönliche Besuchsbandbreite seit 2004",
-       subtitle = "in % der Jahresanzahl Trainings") +
-  scale_y_continuous(limits = c(0, 100), breaks = seq(0,100,20), minor_breaks = seq(0,100,5))
+    aes(x = Vorname, y = visits) +
+    geom_boxplot(outlier.size = 1, outlier.alpha = .5, coef = 100, width = .5) +
+    stat_summary(fun = mean, geom = "point", size = 1, shape = 3, colour = "steelblue", show.legend = TRUE) +
+    mytheme +
+    labs(title = "Persönliche Besuchsbandbreite seit 2004",
+         subtitle = "in % der Jahresanzahl Trainings") +
+    scale_y_continuous(limits = c(0, 100), breaks = seq(0,100,20), minor_breaks = seq(0,100,5))
 
-# ggplotly(p3)
-
+# ranking per year, only of active members
 p4 <- stats %>%
-  filter(!(ID %in% c("Gäste div.", "Passive div."))) %>%
-  group_by(ID, year) %>%
+  inner_join(stamm, by = c("ID", "year"), keep = TRUE, suffix = c("", ".x")) %>%
+  group_by(ID, year, status, Vorname) %>%
   summarise(visits = sum(presence), .groups = "drop_last") %>%
-  left_join(nr_trainings, by = "year") %>%
+  filter(status == "a") %>%
   group_by(year) %>%
-  mutate(rank = min_rank(desc(visits))) %>%
-  inner_join(actives, by = "ID", keep = TRUE, suffix = c(".x", "")) %>%
-  select(c(2:6,11)) %>%
+  mutate(rank = min_rank(desc(visits)), ID = ID, year = year, Vorname = Vorname) %>%
+  right_join(actives, by = "ID", keep = TRUE, suffix = c("", ".y")) %>%
   ggplot() +
-  aes(x = Vorname, y = rank) +
-  geom_boxplot(coef = 100, width = .5) +
-  stat_summary(fun = mean, geom = "point", size = 1, shape = 3, colour = "steelblue", show.legend = TRUE) +
-  mytheme +
-  labs(title = "Persönliche Rankingbandbreite seit 2004",
-       subtitle = "") +
-  scale_y_continuous(limits =c(1,21), breaks = seq(1,21,2))
+    aes(x = Vorname.y, y = rank) +
+    geom_boxplot(coef = 100, width = .5) +
+    stat_summary(fun = mean, geom = "point", size = 1, shape = 3, colour = "steelblue", show.legend = TRUE) +
+    mytheme +
+    labs(title = "Persönliche Rankingbandbreite seit 2004",
+         subtitle = "") +
+    scale_y_continuous(limits =c(1,20), breaks = seq(1,20,1))
+
 
 p5a <- ggplot(figs) +
   aes(x = cat, y = 1, label = head) +
@@ -94,3 +93,13 @@ gridplot2 <- arrangeGrob(p1, p2, p3, p4, p5,
 #grid.arrange(p1, p2, p3, p4, p5,
 #                           heights = c(4,4,1),
 #                           layout_matrix = rbind(c(1,2), c(3,4), c(5)))
+
+
+temp <- stats %>%
+  inner_join(stamm, by = c("ID", "year"), keep = TRUE, suffix = c(".x", "")) %>%
+  group_by(ID, year, status, Vorname) %>%
+  summarise(visits = sum(presence), .groups = "drop_last") %>%
+  filter(status == "a") %>%
+  # left_join(nr_trainings, by = "year") %>%
+  group_by(year) %>%
+  mutate(rank = min_rank(desc(visits)), ID = ID, year = year, Vorname = Vorname)
