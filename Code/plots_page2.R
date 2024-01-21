@@ -68,7 +68,7 @@ p4 <- stats %>%
     mytheme +
     labs(title = "Persönliche Rankingbandbreite seit 2004",
          subtitle = "") +
-    scale_y_continuous(limits =c(1,20), breaks = seq(1,20,1))
+    scale_y_continuous(limits =c(1,20), breaks = c(seq(1,9,2), seq(10,20,2)), minor_breaks = c(1:20))
 
 
 p5a <- ggplot(figs) +
