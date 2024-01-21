@@ -1,6 +1,11 @@
 
 # prep some values ----------------------------------------------------------------------------
 
+# if desired, manually verify yearly total with excel file
+stats %>%
+  group_by(year) %>%
+  summarise(tot = sum(presence))
+
 #all visits
 visits <- stats %>% tally(presence)
 
@@ -35,8 +40,9 @@ females <- stamm %>%
   mutate(ratio = n/sum(n)) %>%
   filter(sex == "f")
 
-#number of distinct members since beginning
+#number of distinct active members since beginning
 nmembers <- stamm %>%
+  filter(n_years > 0) %>%
   distinct(ID) %>%
   tally()
 
@@ -47,27 +53,43 @@ nr_trainings <- stats %>%
   distinct(week) %>%
   tally()
 
-#upper level for memebership years in plots
-maxact <- (max(actives$n_years) %/% 10 +1) * 10
-
 #determine first and last year in data
 minyear <- min(stats$year)
 maxyear <- max(stats$year)
 
-kpi_desc <- c("Besuche/Training", "Standardabweichung", "Besuche total", "Trainings", "Trainings/Aktivmitglied")
+#only currently active members
+actives <- stamm %>%
+  filter(year == maxyear & status == "a") %>%
+  select(ID, sex, status, n_years, Vorname, since) %>%
+  arrange(desc(n_years)) %>%
+  mutate(ID = factor(ID, levels = ID), Vorname = factor(Vorname, levels = Vorname))
+
+#upper level for memebership years in plots
+maxact <- (max(actives$n_years) %/% 10 +1) * 10
+
+kpi_desc <- c("Besuche/Training", "Standardabweichung", "Besuche (total)", "Besuche\n(Veränderung zum Vorjahr)", "Trainings")
 #KPIs last year
 kpi <- stats %>%
   filter(year == maxyear & type == "Training") %>%
   group_by(week) %>%
   summarise(visits = sum(presence)) %>%
-  summarise(avg = round(mean(visits), 2),
-            sd = round(sd(visits), 2),
+  summarise(avg = round(mean(visits), 1),
+            sd = round(sd(visits), 1),
             visits = sum(visits)) %>%
-    bind_cols(nr_tr = (nr_trainings %>% filter(year == maxyear))$n) %>%
-    bind_cols(tr_per_active = round(.$visits/nrow(actives), 2)) %>%
+  bind_cols(upratio = stats %>%
+              filter(year %in% c((maxyear-1):maxyear) & type == "Training") %>%
+              group_by(year) %>%
+              summarise(visits = sum(presence)) %>%
+              mutate(up = 100/accumulate(visits, `/`)-100) %>%
+              pluck(3,2) %>%
+              round(0)) %>%
+  bind_cols(nr_tr = (nr_trainings %>% filter(year == maxyear))$n) %>%
   pivot_longer(everything(), names_to = "cat", values_to = "values") %>%
-  mutate(desc = kpi_desc, idx = 5:1) %>%
-  mutate(values = as.character(values))
+  mutate(desc = kpi_desc, idx = seq(9,1,-2)) %>%
+  mutate(values = as.character(values)) %>%
+  mutate(values = if_else(cat == "upratio",
+                          if_else(values >= 0, paste0("+", values, "%"), paste0("-", values, "%")),
+                                  values))
 
 
 #med, mean, max, min visits per person
@@ -104,7 +126,7 @@ figs <- tibble(cat = "Trainings", value = all_trainings$n,
           head = "seit 2004") %>%
   add_row(cat = "Jahre Aktivmitgliedschaften", value = mitgliedschaftsjahre$n,
           head = "seit Gründung")  %>%
-  add_row(cat = "bisherige Mitglieder", value = nmembers$n,
+  add_row(cat = "bisherige Aktivmitglieder", value = nmembers$n,
           head = "seit Gründung") %>%
   mutate(value = as.character(value)) %>%
   add_row(cat = "Frauenanteil", value = label_percent(accuracy = .1)(females$ratio),
