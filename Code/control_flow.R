@@ -10,7 +10,7 @@ library(gtable)
 library(tidyverse)
 library(readxl)
 library(pdftools)
-library(png)
+# library(png)
 library(magick)
 
 # general stuff
