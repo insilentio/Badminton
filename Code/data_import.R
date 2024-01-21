@@ -14,7 +14,7 @@ events <- c(as.character(c(1:52, 99)))
 sheets <- excel_sheets(path)
 if (exists("stats")) rm(stats)
 for (i in 1:(length(sheets)-1)) {
-  single <- read_excel(path, sheet = sheets[i], range="A5:BG38", col_names = cn)
+  single <- read_excel(path, sheet = sheets[i], range="A5:BG50", col_names = cn)
 
   #tidy it up
   #replace all x's with 1, name the sheets with resp. year, name cols, filter lot of rows and
@@ -154,19 +154,12 @@ cn2 <- ifelse(!grepl("[^[:digit:]]", cn2), paste0("y", cn2), cn2)
 cn2 <- gsub(" ", "", cn2)
 names(stamm) <- cn2
 
+
 #all members
 stamm <- stamm %>%
   slice(-1) %>%
-  pivot_longer(starts_with("y"), "year", values_to = "status") %>%
-  select(c(3,4,10,11,5:9,1:2)) %>%
+  pivot_longer(starts_with("y"), names_to = "year",  values_to = "status") %>%
+  select(ID, sex, year, status, JahreaktivimVerein, Mitgliedseit, Nachname, Vorname) %>%
   mutate(year = substr(year, 2, 5)) %>%
-  mutate(across(c(3, 5:9), as.numeric))
-
-#only currently active members
-actives <- stamm %>%
-  filter(year == maxyear & status == "a") %>%
-  select(ID, sex, status, JahreaktivimVerein, Mitgliedseit, Vorname) %>%
   rename(n_years = JahreaktivimVerein, since = Mitgliedseit) %>%
-  arrange(desc(n_years)) %>%
-  mutate(ID = factor(ID, levels = ID), Vorname = factor(Vorname, levels = Vorname))
-
+  mutate(across(c("year", "n_years"), as.numeric))
