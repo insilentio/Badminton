@@ -22,7 +22,7 @@ present <- present %>%
 
 #plots
 #try to replicate excel table. Not so easy, therefore for the moment switched to a solution
-#where excel table must be imported as a PDF
+#where excel table must be imported as a PNG
 # stats %>%
 #   filter(year == maxyear) %>%
 #   mutate(presence = ifelse(presence == 0, NA, presence),
@@ -31,23 +31,23 @@ present <- present %>%
 #   select(ID, Vorname, Nachname, week, presence) %>%
 #   pivot_wider(id_cols = c(1:4), names_from = week, values_from = presence)
 
-pdf_render_page("Data/BCT_Excel.pdf", dpi = 300) %>%
-  writePNG("Output/BCT_Excel.png")
+# pdf_render_page("Data/BCT_Excel.pdf", dpi = 300) %>%
+#   writePNG("Data/BCT_Excel.png")
 
 c1 <- ggdraw() +
-  draw_image("Output/BCT_Excel.png")
+  draw_image("Data/BCT_Excel.png")
 
 c2 <- ggplot(kpi) +
     aes(y = idx) +
+    geom_text(aes(x = .3, label = values), size = 3, hjust = 1) +
     geom_text(aes(x = .35, label = desc), size = 2, hjust = 0) +
-    geom_text(aes(x = 0.2, label = values), size = 3, hjust = 0.5) +
-    scale_y_continuous(limits = c(-1, 6)) +
+    scale_y_continuous(limits = c(0, 9)) +
     scale_x_continuous(limits = c(0, 1)) +
-    mytheme +
-    theme(panel.grid = element_blank(),
-          axis.text = element_blank(), 
-          axis.text.x = element_blank()) +
-    labs(title = "Jahres-KPIs")
+  mytheme +
+  theme(panel.grid = element_blank(),
+        axis.text = element_blank(), 
+        axis.text.x = element_blank()) +
+  labs(title = "Jahres-KPIs")
 
 c3 <- stats %>%
   filter(year == maxyear) %>%
@@ -62,8 +62,8 @@ c3 <- stats %>%
   aes(x = week, y = value, colour = type) +
   geom_line() +
   xlab(label = "Woche") +
-  scale_y_continuous(limits = c(0,13),
-                     breaks = seq(0,14,2),
+  scale_y_continuous(limits = c(0,18),
+                     breaks = seq(0,18,2),
                      expand = c(0,0)) +
   scale_x_continuous(limits = c(1,52),
                      breaks = c(1,10, 20, 30, 40, 50),
@@ -81,22 +81,22 @@ c3 <- stats %>%
         axis.title.x = element_text(vjust = 6, hjust = .5),
         plot.margin = unit(c(.3, .3, 0, .3), "cm"))
 
-
+# without unpersonal values
 c4 <- stats %>%
+  filter(!ID %in% c("Gäste div.", "Passive div.")) %>%
   filter(year %in% c(maxyear, maxyear-1)) %>%
   group_by(year, ID) %>%
   summarise(presence = sum(presence), .groups = "drop") %>%
   ggplot() +
-  aes(x = as.factor(year), y = presence) +
-  geom_boxplot(width = .5)  +
-  stat_summary(fun = mean, geom = "point", size = 1, shape = 3, colour = "steelblue", show.legend = TRUE) +
-  mytheme +
-  theme(axis.text.x = element_text(angle = 0, hjust = 0.5)) +
-  scale_y_continuous(limits = c(0,40),
-                     breaks = seq(0,40,10),
-                     minor_breaks = seq(0,40,2)) +
-  labs(title = "Teilnahmehäufigkeit")
-
+    aes(x = as.factor(year), y = presence) +
+    geom_boxplot(width = .5)  +
+    stat_summary(fun = mean, geom = "point", size = 1, shape = 3, colour = "steelblue", show.legend = TRUE) +
+    mytheme +
+    theme(axis.text.x = element_text(angle = 0, hjust = 0.5)) +
+    scale_y_continuous(limits = c(0,40),
+                       breaks = seq(0,40,10),
+                       minor_breaks = seq(0,40,2)) +
+    labs(title = "Teilnahmehäufigkeit")
 
 scaler = 30
 c5 <- ggplot(present) +
@@ -151,8 +151,3 @@ gridplot1 <- arrangeGrob(c1,
                           arrangeGrob(c5, leg, c6, widths = c(4.5, 1, 4.5)),
                           heights = c(5,2,3),
                           layout_matrix = rbind(c(1), c(2), c(3)))
-# grid.arrange(c1,
-#               arrangeGrob(c2, c3, c4, widths = c(2,6,2)),
-#               arrangeGrob(c5, leg, c6, widths = c(4.5, 1, 4.5)),
-#               heights = c(5,2,3),
-#               layout_matrix = rbind(c(1), c(2), c(3)))
