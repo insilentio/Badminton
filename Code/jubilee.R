@@ -59,13 +59,12 @@ jub3 <- stats %>%
   group_by(week, train) %>%
   summarise(presence = sum(presence), trainings = sum(train), .groups  = "drop") %>%
   mutate(meanrel = presence/trainings, meanabs = presence/(maxyear-2004+1)) %>%
-  # mutate(cum = cumsum(presence), roll = cum/cumsum(train)) %>%
-  # mutate(presence = ifelse(presence == 0, NA, presence)) %>%
   pivot_longer(cols = c("meanrel", "meanabs"), names_to = "type", values_to = "value") %>%
   na.omit() %>%
   ggplot() +
   aes(x = week, y = value, color = type) +
   geom_line() +
+  geom_smooth(data = . %>% filter(type == "meanrel"), method = "loess", se = FALSE) +
   xlab(label = "Woche") +
   scale_y_continuous(limits = c(0,18),
                      breaks = seq(0,18,2),
@@ -88,7 +87,7 @@ jub3 <- stats %>%
 
 # some informative values -------------------------------------------------
 # mean visits by sex
-stats %>%
+jub4 <- stats %>%
   group_by(ID, year) %>%
   summarise(visits = sum(presence), .groups = "drop_last") %>%
   inner_join(actives, by = "ID", keep = TRUE, suffix = c(".x", "")) %>%
@@ -97,7 +96,7 @@ stats %>%
   print(n=Inf)
 
 # top dates regarding nr. of visits
-stats %>%
+jub5 <- stats %>%
   group_by(year, week) %>%
   summarize(nr = sum(presence)) %>%
   arrange(desc(nr)) %>%
