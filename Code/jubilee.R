@@ -36,14 +36,13 @@ jub1 <- actives2004plus %>%
 
 # column chart with years of membership for all active members sind 2004
 jub2 <- actives2004plus %>%
-  mutate(Vorname = paste(Vorname, " s.", since)) %>%
   arrange(since) %>%
   mutate(Vorname = factor(Vorname, levels = Vorname)) %>%
   ggplot() +
     aes(x = Vorname, y = n_years) +
     geom_col(fill = "steelblue") +
-    # geom_text(aes(x = Vorname, y = 0, label = since),
-    #           hjust = 1, angle = 90, colour= "black") +
+    geom_text(aes(x = Vorname, y = n_years, label = since),
+              hjust = 1, angle = 90, colour= "darkgrey") +
     mytheme +
     ggtitle("Mitgliedschaftsdauer in Jahren (inkl. Beitrittsjahr)") +
     scale_y_continuous(limits = c(0,maxact),
