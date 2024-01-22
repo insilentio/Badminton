@@ -28,7 +28,7 @@ p1 <- actives %>%
 p2 <- ggplot(actives) +
   aes(x = Vorname, y = n_years) +
   geom_col(fill = "steelblue") +
-  geom_text(aes(x = Vorname, y = max(n_years), label = since),
+  geom_text(aes(x = Vorname, y = n_years, label = since),
             hjust = 1, angle = 90, colour= "darkgrey") +
   mytheme +
   ggtitle("Mitgliedschaftsdauer in Jahren (inkl. Beitrittsjahr)") +
@@ -93,13 +93,3 @@ gridplot2 <- arrangeGrob(p1, p2, p3, p4, p5,
 #grid.arrange(p1, p2, p3, p4, p5,
 #                           heights = c(4,4,1),
 #                           layout_matrix = rbind(c(1,2), c(3,4), c(5)))
-
-
-temp <- stats %>%
-  inner_join(stamm, by = c("ID", "year"), keep = TRUE, suffix = c(".x", "")) %>%
-  group_by(ID, year, status, Vorname) %>%
-  summarise(visits = sum(presence), .groups = "drop_last") %>%
-  filter(status == "a") %>%
-  # left_join(nr_trainings, by = "year") %>%
-  group_by(year) %>%
-  mutate(rank = min_rank(desc(visits)), ID = ID, year = year, Vorname = Vorname)

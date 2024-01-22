@@ -70,7 +70,7 @@ c3 <- stats %>%
                      minor_breaks = seq(2,52,2),
                      expand = c(0,0)) +
   scale_colour_manual(labels = c("Anz. Besucher", "kum. Mittelwert"),
-                      values = c("purple", "pink")) +
+                      values = c("purple", "red")) +
   mytheme +
   theme(legend.title = element_blank(),
         legend.position = c(.2,.95),
@@ -84,7 +84,7 @@ c3 <- stats %>%
 # without unpersonal values
 c4 <- stats %>%
   filter(!ID %in% c("Gäste div.", "Passive div.")) %>%
-  filter(year %in% c(maxyear, maxyear-1)) %>%
+  filter(year %in% c(maxyear, maxyear-1, maxyear-2, maxyear-3)) %>%
   group_by(year, ID) %>%
   summarise(presence = sum(presence), .groups = "drop") %>%
   ggplot() +
