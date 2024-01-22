@@ -37,6 +37,8 @@ source("Code/plots_page1.R")
 # second page
 source("Code/plots_page2.R")
 
+# anniversary code
+source("Code/jubilee.R")
 
 # save both pages into one pdf
   pdf("Output/Teilnehmerstatistik.pdf", width = 29.7/2.54, height = 21/2.54)
