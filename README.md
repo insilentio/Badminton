@@ -22,11 +22,11 @@ Therefore, running `source "control_flow.R"` should render the whole output as d
 ## Output
 
 PDF with 2 pages:\
-First page contains mainly data of most current year (determined by the latest tab in the members' presence file). Second page contains some cumulative data since 2004 (bgininning of statistics).\
+First page contains mainly data of most current year (determined by the latest tab in the members' presence file). Second page contains some cumulative data since 2004 (beginning of statistics).
 
 ## Known issues
 
--   There is currrently no parameter to choose the current year.
--   Code is not following functional programming guidelines.
--   PNG must be created manually.
--   Members file is an Apple Numbers file and must be converted with Excel to an xlsx file.
+-   There is currrently no parameter to choose the current year
+-   Code is not following functional programming guidelines
+-   PNG must be created manually
+-   Members file is an Apple Numbers file and must be converted with Excel to an xlsx file
