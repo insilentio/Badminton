@@ -12,9 +12,9 @@ actives2004plus <- stamm %>%
 
 # all active members ever (currently not used)
 actives4ever <- stamm %>%
-  filter(status == "a") %>%
+  filter(status == "a", !is.na(since)) %>%
   distinct(ID, sex, status, n_years, Vorname, since) %>%
-  arrange(desc(n_years)) %>%
+  arrange((n_years)) %>%
   mutate(ID = factor(ID, levels = ID), Vorname = paste0(Vorname, " ", substr(ID,1,1), "."), since = as.numeric(since)) %>%
   add_row(tibble(ID = NA, sex = NA, status = NA, n_years = NA, Vorname = NA, since = (c(1980:maxyear+1))))
 
@@ -31,8 +31,8 @@ jub1 <- actives2004plus %>%
             rect_border = NA,
             fill_colours = rep("steelblue", nrow(actives2004plus)),
             fill_by_sign = FALSE) +
-  mytheme +
-  ggtitle("Kumulierte Teilnahmen der Aktivmitglieder seit 2004")
+    mytheme +
+    ggtitle("Kumulierte Teilnahmen der Aktivmitglieder seit 2004")
 
 # column chart with years of membership for all active members sind 2004
 jub2 <- actives2004plus %>%
@@ -95,27 +95,8 @@ jub3c <- jub3b +
   geom_line(data = grouped_data, mapping = aes(x = week, y = presence)) +
   geom_smooth(data = grouped_data, mapping = aes(x = week, y = presence),  method = "loess", se = TRUE)
 
-# some informative values -------------------------------------------------
-# mean visits by sex
+# longest streak
 jub4 <- stats %>%
-  group_by(ID, year) %>%
-  summarise(visits = sum(presence), .groups = "drop_last") %>%
-  inner_join(actives, by = "ID", keep = TRUE, suffix = c(".x", "")) %>%
-  group_by(sex,) %>%
-  summarize(meanvisits = mean(visits)) %>%
-  print(n=Inf)
-
-# top dates regarding nr. of visits
-jub5 <- stats %>%
-  group_by(year, week) %>%
-  summarize(nr = sum(presence)) %>%
-  arrange(desc(nr)) %>%
-  print(n = 40)
-
-
-# longest streak ----------------------------------------------------------
-
-jub6 <- stats %>%
   filter(type != "Ferien", ID != "Gäste div.", ID != "Passive div.") %>%
   arrange(ID, year, week) %>%
   mutate(lags = if_else(lag(presence, default = 0) == 1, 0, 1)) %>%
@@ -136,3 +117,18 @@ jub6 <- stats %>%
     scale_y_continuous(limits = c(0,100),
                        breaks = seq(0, 100,10),
                        minor_breaks = seq(0, 100, 5))
+
+# some informative values -------------------------------------------------
+# mean visits by sex
+jub5 <- stats %>%
+  group_by(ID, year) %>%
+  summarise(visits = sum(presence), .groups = "drop_last") %>%
+  inner_join(actives, by = "ID", keep = TRUE, suffix = c(".x", "")) %>%
+  group_by(sex,) %>%
+  summarize(meanvisits = mean(visits))
+
+# top dates regarding nr. of visits
+jub6 <- stats %>%
+  group_by(year, week) %>%
+  summarize(nr = sum(presence), .groups = "drop") %>%
+  arrange(desc(nr))

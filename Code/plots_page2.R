@@ -3,14 +3,14 @@
 #overall mean attendance plot
 stats %>%
   group_by(year,week) %>%
-  summarise(sum=sum(presence)) %>%
+  summarise(sum=sum(presence), .groups = "drop") %>%
   group_by(week) %>%
-  summarise(mean=mean(sum)) %>%
+  summarise(mean=mean(sum), .groups = "drop") %>%
   ggplot() +
-  aes(x=week, y=mean) +
-  geom_line() +
-  xlim(c(1,52)) +
-  scale_y_continuous(breaks = c(0:12), limits = c(0,12))
+    aes(x=week, y=mean) +
+    geom_line() +
+    xlim(c(1,52)) +
+    scale_y_continuous(breaks = c(0:12), limits = c(0,12))
 
 #generate the plots for the Teilnehmerstatistik
 
