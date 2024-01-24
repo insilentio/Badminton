@@ -25,13 +25,17 @@ p1 <- actives %>%
   mytheme +
   ggtitle("Kumulierte Teilnahmen der Aktivmitglieder seit 2004")
 
-p2 <- ggplot(actives) +
+p2 <- actives |>
+  left_join(cumvisits, by = "ID") |>
+  mutate(avgperyear = if_else((maxyear-2004+1) < n_years, n/(maxyear-2004+1), n/n_years)) |>
+ggplot() +
   aes(x = Vorname, y = n_years) +
   geom_col(fill = "steelblue") +
+  geom_point(aes(x = Vorname, y = avgperyear), color = "darkblue") +
   geom_text(aes(x = Vorname, y = n_years, label = since),
             hjust = 1, angle = 90, colour= "darkgrey") +
   mytheme +
-  ggtitle("Mitgliedschaftsdauer in Jahren (inkl. Beitrittsjahr)") +
+  ggtitle("Mitgliedschaftsdauer in Jahren, durchschnittliche Besuchsquote und Beitrittsjahr") +
   scale_y_continuous(limits = c(0,maxact),
                      breaks = seq(0, maxact,10),
                      minor_breaks = seq(0, maxact, 2))
