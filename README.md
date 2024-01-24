@@ -2,7 +2,7 @@
 
 **Reports for presence statistics of members of BCT80 Thalwil**
 
-This repo contains R Code for reading and reporting on the members' presence file (file is not public due to data privacy reasons; if you feel entitled to use it, please write to [badmintonthalwil\@gmail.com](mailto:badmintonthalwil@gmail.com){.email} to receive a copy).
+This repo contains R Code for reading and reporting on the members' presence file (file is not public due to data privacy reasons; if you feel entitled to use it, please write to [badmintonthalwil\@gmail.com](mailto:badmintonthalwil@gmail.com) to receive a copy).
 
 ## Prerequisites
 
