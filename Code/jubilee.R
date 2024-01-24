@@ -86,6 +86,7 @@ grouped_data <- stats %>%
   group_by(week, train) %>%
   summarise(presence = sum(presence), trainings = sum(train), .groups  = "drop") %>%
   mutate(presence = presence/trainings) %>%
+  filter(trainings > 5) %>%
   na.omit()
 
 jub3b <- jub3 +
@@ -93,7 +94,11 @@ jub3b <- jub3 +
   scale_colour_manual(values = rep("lightgrey", 20))
 jub3c <- jub3b +
   geom_line(data = grouped_data, mapping = aes(x = week, y = presence)) +
-  geom_smooth(data = grouped_data, mapping = aes(x = week, y = presence),  method = "loess", se = TRUE)
+  geom_smooth(data = grouped_data, mapping = aes(x = week, y = presence),  method = "loess", se = TRUE, level = .9)
+jub3d <- jub3c +
+  scale_y_continuous(limits = c(8,13),
+                     breaks = seq(1,13,1),
+                     expand = c(0,0))
 
 # longest streak
 jub4 <- stats %>%
@@ -132,3 +137,4 @@ jub6 <- stats %>%
   group_by(year, week) %>%
   summarize(nr = sum(presence), .groups = "drop") %>%
   arrange(desc(nr))
+  
