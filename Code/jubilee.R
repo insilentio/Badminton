@@ -56,25 +56,17 @@ jub3 <- stats %>%
   filter(train == 1) %>%
   group_by(year, week, train) %>%
   summarise(presence = sum(presence), .groups  = "drop") %>%
-  group_by(week, train) %>%
-  summarise(presence = sum(presence), trainings = sum(train), .groups  = "drop") %>%
-  mutate(meanrel = presence/trainings, meanabs = presence/(maxyear-2004+1)) %>%
-  pivot_longer(cols = c("meanrel", "meanabs"), names_to = "type", values_to = "value") %>%
   na.omit() %>%
   ggplot() +
-  aes(x = week, y = value, color = type) +
-  geom_line() +
-  geom_smooth(data = . %>% filter(type == "meanrel"), method = "loess", se = FALSE) +
+  geom_line(mapping = aes(x = week, y = presence, color = as.factor(year))) +
   xlab(label = "Woche") +
-  scale_y_continuous(limits = c(0,18),
-                     breaks = seq(0,18,2),
+  scale_y_continuous(limits = c(0,20),
+                     breaks = seq(0,20,2),
                      expand = c(0,0)) +
   scale_x_continuous(limits = c(1,52),
                      breaks = c(1,10, 20, 30, 40, 50),
                      minor_breaks = seq(2,52,2),
                      expand = c(0,0)) +
-  scale_colour_manual(labels = c("ø Besucher pro Woche", "ø Besucher pro Trainingswoche"),
-                      values = c("purple", "red")) +
   mytheme +
   theme(legend.title = element_blank(),
         legend.position = c(.2,.95),
@@ -82,8 +74,26 @@ jub3 <- stats %>%
         panel.grid.major.x = element_line(),
         panel.grid.minor.x = element_line(),
         axis.text.x = element_text(angle = 0, vjust = 0, hjust = 0.5),
-        axis.title.x = element_text(vjust = 6, hjust = .5),
-        plot.margin = unit(c(.3, .3, 0, .3), "cm"))
+        axis.title.x = element_text(vjust = 6, hjust = .5))
+
+
+
+grouped_data <- stats %>%
+  mutate(train = ifelse(type == "Training", 1, 0)) %>%
+  filter(train == 1) %>%
+  group_by(year, week, train) %>%
+  summarise(presence = sum(presence), .groups  = "drop") %>%
+  group_by(week, train) %>%
+  summarise(presence = sum(presence), trainings = sum(train), .groups  = "drop") %>%
+  mutate(presence = presence/trainings) %>%
+  na.omit()
+
+jub3b <- jub3 +
+  theme(legend.position = "none") +
+  scale_colour_manual(values = rep("lightgrey", 20))
+jub3c <- jub3b +
+  geom_line(data = grouped_data, mapping = aes(x = week, y = presence)) +
+  geom_smooth(data = grouped_data, mapping = aes(x = week, y = presence),  method = "loess", se = TRUE)
 
 # some informative values -------------------------------------------------
 # mean visits by sex
@@ -102,3 +112,27 @@ jub5 <- stats %>%
   arrange(desc(nr)) %>%
   print(n = 40)
 
+
+# longest streak ----------------------------------------------------------
+
+jub6 <- stats %>%
+  filter(type != "Ferien", ID != "Gäste div.", ID != "Passive div.") %>%
+  arrange(ID, year, week) %>%
+  mutate(lags = if_else(lag(presence, default = 0) == 1, 0, 1)) %>%
+  mutate(group = cumsum(lags)) %>%
+  group_by(ID, group) %>%
+  summarize(streak = sum(presence), .groups = "drop_last") %>%
+  summarize(maxstreak = max(streak), .groups = "drop") %>%
+  arrange(desc(maxstreak)) %>%
+  filter(maxstreak != 0) %>%
+  left_join(stamm %>% distinct(ID, .keep_all = TRUE), by = "ID") %>%
+  mutate(Vorname = paste0(Vorname, " ", substr(ID,1,1), ".")) %>%
+  mutate(Vorname = factor(Vorname, levels = Vorname)) %>%
+  ggplot() +
+    aes(x = Vorname, y = maxstreak) +
+    geom_col(fill = "steelblue") +
+    mytheme +
+    ggtitle("Longest streak") +
+    scale_y_continuous(limits = c(0,100),
+                       breaks = seq(0, 100,10),
+                       minor_breaks = seq(0, 100, 5))
