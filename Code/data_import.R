@@ -162,4 +162,5 @@ stamm <- stamm %>%
   select(ID, sex, year, status, JahreaktivimVerein, Mitgliedseit, Nachname, Vorname) %>%
   mutate(year = substr(year, 2, 5)) %>%
   rename(n_years = JahreaktivimVerein, since = Mitgliedseit) %>%
-  mutate(across(c("year", "n_years"), as.numeric))
+  mutate(across(c("year", "n_years"), as.numeric)) %>%
+  filter(!is.na(ID))

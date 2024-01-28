@@ -3,14 +3,14 @@
 #overall mean attendance plot
 stats %>%
   group_by(year,week) %>%
-  summarise(sum=sum(presence)) %>%
+  summarise(sum=sum(presence), .groups = "drop") %>%
   group_by(week) %>%
-  summarise(mean=mean(sum)) %>%
+  summarise(mean=mean(sum), .groups = "drop") %>%
   ggplot() +
-  aes(x=week, y=mean) +
-  geom_line() +
-  xlim(c(1,52)) +
-  scale_y_continuous(breaks = c(0:12), limits = c(0,12))
+    aes(x=week, y=mean) +
+    geom_line() +
+    xlim(c(1,52)) +
+    scale_y_continuous(breaks = c(0:12), limits = c(0,12))
 
 #generate the plots for the Teilnehmerstatistik
 
@@ -25,13 +25,17 @@ p1 <- actives %>%
   mytheme +
   ggtitle("Kumulierte Teilnahmen der Aktivmitglieder seit 2004")
 
-p2 <- ggplot(actives) +
+p2 <- actives |>
+  left_join(cumvisits, by = "ID") |>
+  mutate(avgperyear = if_else((maxyear-2004+1) < n_years, n/(maxyear-2004+1), n/n_years)) |>
+ggplot() +
   aes(x = Vorname, y = n_years) +
   geom_col(fill = "steelblue") +
-  geom_text(aes(x = Vorname, y = max(n_years), label = since),
+  geom_point(aes(x = Vorname, y = avgperyear), color = "darkblue") +
+  geom_text(aes(x = Vorname, y = n_years, label = since),
             hjust = 1, angle = 90, colour= "darkgrey") +
   mytheme +
-  ggtitle("Mitgliedschaftsdauer in Jahren (inkl. Beitrittsjahr)") +
+  ggtitle("Mitgliedschaftsdauer in Jahren, durchschnittliche Besuchsquote und Beitrittsjahr") +
   scale_y_continuous(limits = c(0,maxact),
                      breaks = seq(0, maxact,10),
                      minor_breaks = seq(0, maxact, 2))
@@ -68,7 +72,7 @@ p4 <- stats %>%
     mytheme +
     labs(title = "Persönliche Rankingbandbreite seit 2004",
          subtitle = "") +
-    scale_y_continuous(limits =c(1,20), breaks = c(seq(1,9,2), seq(10,20,2)), minor_breaks = c(1:20))
+    scale_y_continuous(limits =c(1,20), breaks = c(1:20), minor_breaks = c(1:20))
 
 
 p5a <- ggplot(figs) +
@@ -93,13 +97,3 @@ gridplot2 <- arrangeGrob(p1, p2, p3, p4, p5,
 #grid.arrange(p1, p2, p3, p4, p5,
 #                           heights = c(4,4,1),
 #                           layout_matrix = rbind(c(1,2), c(3,4), c(5)))
-
-
-temp <- stats %>%
-  inner_join(stamm, by = c("ID", "year"), keep = TRUE, suffix = c(".x", "")) %>%
-  group_by(ID, year, status, Vorname) %>%
-  summarise(visits = sum(presence), .groups = "drop_last") %>%
-  filter(status == "a") %>%
-  # left_join(nr_trainings, by = "year") %>%
-  group_by(year) %>%
-  mutate(rank = min_rank(desc(visits)), ID = ID, year = year, Vorname = Vorname)

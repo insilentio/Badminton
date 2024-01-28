@@ -59,32 +59,32 @@ c3 <- stats %>%
   pivot_longer(cols = c("presence", "roll"), names_to = "type", values_to = "value") %>%
   na.omit() %>%
   ggplot() +
-  aes(x = week, y = value, colour = type) +
-  geom_line() +
-  xlab(label = "Woche") +
-  scale_y_continuous(limits = c(0,18),
-                     breaks = seq(0,18,2),
-                     expand = c(0,0)) +
-  scale_x_continuous(limits = c(1,52),
-                     breaks = c(1,10, 20, 30, 40, 50),
-                     minor_breaks = seq(2,52,2),
-                     expand = c(0,0)) +
-  scale_colour_manual(labels = c("Anz. Besucher", "kum. Mittelwert"),
-                      values = c("purple", "pink")) +
-  mytheme +
-  theme(legend.title = element_blank(),
-        legend.position = c(.2,.95),
-        legend.direction = "horizontal",
-        panel.grid.major.x = element_line(),
-        panel.grid.minor.x = element_line(),
-        axis.text.x = element_text(angle = 0, vjust = 0, hjust = 0.5),
-        axis.title.x = element_text(vjust = 6, hjust = .5),
-        plot.margin = unit(c(.3, .3, 0, .3), "cm"))
+    aes(x = week, y = value, colour = type) +
+    geom_line() +
+    xlab(label = "Woche") +
+    scale_y_continuous(limits = c(0,18),
+                       breaks = seq(0,18,2),
+                       expand = c(0,0)) +
+    scale_x_continuous(limits = c(1,52),
+                       breaks = c(1,10, 20, 30, 40, 50),
+                       minor_breaks = seq(2,52,2),
+                       expand = c(0,0)) +
+    scale_colour_manual(labels = c("Anz. Besucher", "kum. Mittelwert"),
+                        values = c("purple", "red")) +
+    mytheme +
+    theme(legend.title = element_blank(),
+          legend.position = c(.2,.95),
+          legend.direction = "horizontal",
+          panel.grid.major.x = element_line(),
+          panel.grid.minor.x = element_line(),
+          axis.text.x = element_text(angle = 0, vjust = 0, hjust = 0.5),
+          axis.title.x = element_text(vjust = 6, hjust = .5),
+          plot.margin = unit(c(.3, .3, 0, .3), "cm"))
 
 # without unpersonal values
 c4 <- stats %>%
   filter(!ID %in% c("Gäste div.", "Passive div.")) %>%
-  filter(year %in% c(maxyear, maxyear-1)) %>%
+  filter(year %in% c(maxyear, maxyear-1, maxyear-2, maxyear-3)) %>%
   group_by(year, ID) %>%
   summarise(presence = sum(presence), .groups = "drop") %>%
   ggplot() +
