@@ -10,7 +10,6 @@ library(gtable)
 library(tidyverse)
 library(readxl)
 library(pdftools)
-# library(png)
 library(magick)
 library(ggbreak)
 
@@ -24,7 +23,8 @@ mytheme <- theme_minimal() +
         plot.title = element_text(colour = "darkgrey", size = 11, hjust = 0.5),
         plot.subtitle = element_text(colour = "darkgrey", size = 9, hjust = 0.5),
         plot.margin = unit(rep(.3,4), "cm"),
-        plot.background = element_rect(colour = "darkgrey", fill=NA, linewidth =.5) )
+        # plot.background = element_rect(colour = "darkgrey", fill=NA, linewidth =.5),
+        panel.background = element_rect(fill = 'white', colour = 'white'))
 
 #import data
 source("Code/data_import.R")
@@ -41,8 +41,15 @@ source("Code/plots_page2.R")
 # anniversary code
 source("Code/jubilee.R")
 
-# save both pages into one pdf
-  pdf("Output/Teilnehmerstatistik.pdf", width = 29.7/2.54, height = 21/2.54)
-  lapply(list(gridplot1, gridplot2), grid.arrange)
-  dev.off()
-  
+# save both pages into one pdf for double sided A4 printout
+pdf("Output/Teilnehmerstatistik.pdf", width = 29.7/2.54, height = 21/2.54)
+lapply(list(gridplot1, gridplot2), grid.arrange)
+dev.off()
+
+# save slides as png's for presentation
+for (i in 1:9) {
+  ggsave(paste0("Output/Slides", i, ".png"),
+          get(paste0("gridslide", i)),
+          device = png(),
+          width = 16, height = 9)
+}

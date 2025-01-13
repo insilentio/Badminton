@@ -140,3 +140,54 @@ jub6 <- stats %>%
   summarize(nr = sum(presence), .groups = "drop") %>%
   arrange(desc(nr))
   
+
+
+# slides ------------------------------------------------------------------
+
+gridslide1 <- arrangeGrob(c1,
+                         arrangeGrob(ggplot() + mytheme, c3, ggplot() + mytheme,
+                                     widths = c(.8 , 8, .9)),
+                         heights = c(5,2),
+                         layout_matrix = rbind(c(1), c(2)))
+
+gridslide2 <- arrangeGrob(arrangeGrob(arrangeGrob(ggplot() + mytheme, c2, ggplot() + mytheme,
+                                                  heights = c(1 , 8, 1)), c4,
+                                      widths = c(3, 7)) ,
+                          p5,
+                          heights = c(10,2),
+                          layout_matrix = rbind(1, 2))
+
+# how to include legend in between?
+gridslide3 <- arrangeGrob(c5, c6,
+                          heights = c(1, 1),
+                          layout_matrix = rbind(1, 2))
+
+gridslide4 <- arrangeGrob(p2,
+                          heights = 1,
+                          layout_matrix = rbind(c(1)))
+
+gridslide5 <- arrangeGrob(p1,
+                          heights = 1,
+                          layout_matrix = rbind(c(1)))
+
+gridslide6 <- arrangeGrob(p3,
+                          heights = 1,
+                          layout_matrix = rbind(c(1)))
+
+gridslide7 <- arrangeGrob(p4,
+                          heights = 1,
+                          layout_matrix = rbind(c(1)))
+
+gridslide8 <- arrangeGrob(jub2,
+                          heights = 1,
+                          layout_matrix = rbind(c(1)))
+
+gridslide9 <- arrangeGrob(jub1,
+                          heights = 1,
+                          layout_matrix = rbind(c(1)))
+
+# this one directly, because arrangeGrob does not work with ggbreak
+ggsave(paste0("Output/Slides10.png"),
+       jub4,
+       device = png(),
+       width = 16, height = 9)

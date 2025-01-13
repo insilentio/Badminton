@@ -96,6 +96,3 @@ p5 <- arrangeGrob(p5a,p5b,p5c, nrow = 3)
 gridplot2 <- arrangeGrob(p1, p2, p3, p4, p5,
                           heights = c(4,4,1),
                           layout_matrix = rbind(c(1,2), c(3,4), c(5)))
-#grid.arrange(p1, p2, p3, p4, p5,
-#                           heights = c(4,4,1),
-#                           layout_matrix = rbind(c(1,2), c(3,4), c(5)))

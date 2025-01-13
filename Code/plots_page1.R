@@ -39,8 +39,8 @@ c1 <- ggdraw() +
 
 c2 <- ggplot(kpi) +
     aes(y = idx) +
-    geom_text(aes(x = .3, label = values), size = 3, hjust = 1) +
-    geom_text(aes(x = .35, label = desc), size = 2, hjust = 0) +
+    geom_text(aes(x = .2, label = values), size = 4, hjust = 1) +
+    geom_text(aes(x = .25, label = desc), size = 4, hjust = 0) +
     scale_y_continuous(limits = c(0, 9)) +
     scale_x_continuous(limits = c(0, 1)) +
   mytheme +
