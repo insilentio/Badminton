@@ -9,11 +9,15 @@ stats %>%
 #all visits
 visits <- stats %>% tally(presence)
 
-#cumulated visits per person
-cumvisits <- stats %>%
-  count(ID, wt=presence) %>%
-  arrange(-n) %>%
-  filter(!grepl("Gäste", ID) & !grepl("Passive", ID))
+#cumulated visits per person total and only during active member years
+cumvisits <- stats |> 
+  count(ID, wt = presence) |>
+  filter(!grepl("Gäste", ID) & !grepl("Passive", ID)) |> 
+  left_join(stats |> 
+      left_join(stamm, by = c("ID", "year")) |>
+      filter(status == "a") |> 
+              count(ID, wt = presence, name = "n_active"), by = "ID") |> 
+  arrange(-n)
 
 # max. and min. visits
 maxmin <- stats %>% 
@@ -62,7 +66,12 @@ actives <- stamm %>%
   filter(year == maxyear & status == "a") %>%
   select(ID, sex, status, n_years, Vorname, since) %>%
   arrange(desc(n_years)) %>%
-  mutate(ID = factor(ID, levels = ID), Vorname = factor(Vorname, levels = Vorname))
+  mutate(ID = factor(ID, levels = ID), Vorname = factor(Vorname, levels = Vorname)) |> 
+  left_join(stamm |> 
+    filter(year >= 2004 & status == "a") |> 
+    group_by(ID) |> 
+    summarise(activeYearsSince2004 = n()), by = "ID")
+
 
 #upper level for memebership years in plots
 maxact <- (max(actives$n_years) %/% 10 +1) * 10

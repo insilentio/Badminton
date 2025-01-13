@@ -62,8 +62,8 @@ c3 <- stats %>%
     aes(x = week, y = value, colour = type) +
     geom_line() +
     xlab(label = "Woche") +
-    scale_y_continuous(limits = c(0,18),
-                       breaks = seq(0,18,2),
+    scale_y_continuous(limits = c(8,24),
+                       breaks = seq(8,24,2),
                        expand = c(0,0)) +
     scale_x_continuous(limits = c(1,52),
                        breaks = c(1,10, 20, 30, 40, 50),

@@ -89,9 +89,10 @@ grouped_data <- stats %>%
   filter(trainings > 5) %>%
   na.omit()
 
+# manually: change the value in scale_colour_manual to the currently active members value
 jub3b <- jub3 +
   theme(legend.position = "none") +
-  scale_colour_manual(values = rep("lightgrey", 20))
+  scale_colour_manual(values = rep("lightgrey", 21))
 jub3c <- jub3b +
   geom_line(data = grouped_data, mapping = aes(x = week, y = presence)) +
   geom_smooth(data = grouped_data, mapping = aes(x = week, y = presence),  method = "loess", se = TRUE, level = .9)
@@ -100,7 +101,7 @@ jub3d <- jub3c +
                      breaks = seq(1,13,1),
                      expand = c(0,0))
 
-# longest streak
+# longest streak (with interrupted y scale :-( )
 jub4 <- stats %>%
   filter(type != "Ferien", ID != "Gäste div.", ID != "Passive div.") %>%
   arrange(ID, year, week) %>%
@@ -119,9 +120,10 @@ jub4 <- stats %>%
     geom_col(fill = "steelblue") +
     mytheme +
     ggtitle("Longest streak") +
-    scale_y_continuous(limits = c(0,100),
-                       breaks = seq(0, 100,10),
-                       minor_breaks = seq(0, 100, 5))
+    scale_y_continuous(limits = c(0,130),
+                       breaks = seq(0, 130,10),
+                       minor_breaks = seq(0, 130, 2)) +
+    scale_y_break(breaks = c(40, 120), expand = expansion(mult = c(.02, .02)))
 
 # some informative values -------------------------------------------------
 # mean visits by sex

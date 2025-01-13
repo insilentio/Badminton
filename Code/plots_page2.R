@@ -25,9 +25,11 @@ p1 <- actives %>%
   mytheme +
   ggtitle("Kumulierte Teilnahmen der Aktivmitglieder seit 2004")
 
+# p2 shows the number of years as active member since the beginning, the year of (first) entering
+# active membership and the average visits per year during the years as active member (since 2004 only)
 p2 <- actives |>
   left_join(cumvisits, by = "ID") |>
-  mutate(avgperyear = if_else((maxyear-2004+1) < n_years, n/(maxyear-2004+1), n/n_years)) |>
+  mutate(avgperyear = n_active/activeYearsSince2004) |> 
 ggplot() +
   aes(x = Vorname, y = n_years) +
   geom_col(fill = "steelblue") +
