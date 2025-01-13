@@ -11,7 +11,8 @@ library(tidyverse)
 library(readxl)
 library(pdftools)
 # library(png)
-# library(magick)
+library(magick)
+library(ggbreak)
 
 # general stuff
 mytheme <- theme_minimal() +
