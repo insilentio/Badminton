@@ -26,6 +26,9 @@ mytheme <- theme_minimal() +
         # plot.background = element_rect(colour = "darkgrey", fill=NA, linewidth =.5),
         panel.background = element_rect(fill = 'white', colour = 'white'))
 
+
+# source all code files ---------------------------------------------------
+
 #import data
 source("Code/data_import.R")
 
@@ -41,6 +44,9 @@ source("Code/plots_page2.R")
 # anniversary code
 source("Code/jubilee.R")
 
+
+# output ------------------------------------------------------------------
+
 # save both pages into one pdf for double sided A4 printout
 pdf("Output/Teilnehmerstatistik.pdf", width = 29.7/2.54, height = 21/2.54)
 lapply(list(gridplot1, gridplot2), grid.arrange)
@@ -53,3 +59,8 @@ for (i in 1:9) {
           device = png(),
           width = 16, height = 9)
 }
+# this one directly, because arrangeGrob does not work with ggbreak
+ggsave(paste0("Output/Slides10.png"),
+       jub4,
+       device = png(),
+       width = 16, height = 9)
