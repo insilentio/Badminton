@@ -51,6 +51,7 @@ jub2 <- actives2004plus %>%
 
 
 # weekly visits over the years
+# this was only used once (2024); it is a bit stretched to interpret anything here
 jub3 <- stats %>%
   mutate(train = ifelse(type == "Training", 1, 0)) %>%
   filter(train == 1) %>%
@@ -69,7 +70,8 @@ jub3 <- stats %>%
                      expand = c(0,0)) +
   mytheme +
   theme(legend.title = element_blank(),
-        legend.position = c(.2,.95),
+        legend.position = "inside",
+        legend.position.inside = c(.2,.95),
         legend.direction = "horizontal",
         panel.grid.major.x = element_line(),
         panel.grid.minor.x = element_line(),
@@ -140,3 +142,51 @@ jub6 <- stats %>%
   summarize(nr = sum(presence), .groups = "drop") %>%
   arrange(desc(nr))
   
+
+
+# slides ------------------------------------------------------------------
+
+gridslide1 <- arrangeGrob(c1,
+                         arrangeGrob(ggplot() + mytheme, c3, ggplot() + mytheme,
+                                     widths = c(1 , 6.5, 1)),
+                         heights = c(5,2),
+                         layout_matrix = rbind(c(1), c(2)))
+
+gridslide2 <- arrangeGrob(arrangeGrob(arrangeGrob(ggplot() + mytheme, c2, ggplot() + mytheme,
+                                                  heights = c(1 , 8, 1)), c4,
+                                      widths = c(3, 7)) ,
+                          p5,
+                          heights = c(10,2),
+                          layout_matrix = rbind(1, 2))
+
+# including the legend on top of the other charts is a bit cumbersome
+gridslide3 <- arrangeGrob(c5, c6,
+                          heights = c(1, 1),
+                          layout_matrix = rbind(1, 2)) |> 
+                ggdraw() +
+                  theme(plot.background = element_rect(fill="white", color = "white")) +
+                  draw_grob(leg, x = 0.45)
+
+gridslide4 <- arrangeGrob(p2,
+                          heights = 1,
+                          layout_matrix = rbind(c(1)))
+
+gridslide5 <- arrangeGrob(p1,
+                          heights = 1,
+                          layout_matrix = rbind(c(1)))
+
+gridslide6 <- arrangeGrob(p3,
+                          heights = 1,
+                          layout_matrix = rbind(c(1)))
+
+gridslide7 <- arrangeGrob(p4,
+                          heights = 1,
+                          layout_matrix = rbind(c(1)))
+
+gridslide8 <- arrangeGrob(jub2,
+                          heights = 1,
+                          layout_matrix = rbind(c(1)))
+
+gridslide9 <- arrangeGrob(jub1,
+                          heights = 1,
+                          layout_matrix = rbind(c(1)))

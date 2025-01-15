@@ -39,8 +39,8 @@ c1 <- ggdraw() +
 
 c2 <- ggplot(kpi) +
     aes(y = idx) +
-    geom_text(aes(x = .3, label = values), size = 3, hjust = 1) +
-    geom_text(aes(x = .35, label = desc), size = 2, hjust = 0) +
+    geom_text(aes(x = .2, label = values), size = 4, hjust = 1) +
+    geom_text(aes(x = .25, label = desc), size = 4, hjust = 0) +
     scale_y_continuous(limits = c(0, 9)) +
     scale_x_continuous(limits = c(0, 1)) +
   mytheme +
@@ -73,7 +73,8 @@ c3 <- stats %>%
                         values = c("purple", "red")) +
     mytheme +
     theme(legend.title = element_blank(),
-          legend.position = c(.2,.95),
+          legend.position = "inside",
+          legend.position.inside = c(.2,.95),
           legend.direction = "horizontal",
           panel.grid.major.x = element_line(),
           panel.grid.minor.x = element_line(),
@@ -117,7 +118,7 @@ c5 <- ggplot(present) +
   scale_y_continuous(limits = c(0,600),
                      breaks = seq(0,600,100),
                      minor_breaks = seq(0, 600, 25),
-                     sec.axis = sec_axis(trans = ~ .x/scaler, name = "Mittelwert")) +
+                     sec.axis = sec_axis(transform = ~ .x/scaler, name = "Mittelwert")) +
   scale_x_continuous(breaks = c(minyear:maxyear)) +
   scale_fill_manual(values = c("steelblue", "limegreen", "darkred")) +
   labs(title = "Teilnehmerentwicklung nach Kategorien (absolut)")
@@ -135,15 +136,15 @@ c6 <- ggplot(present) +
   scale_fill_manual(values = c("steelblue", "limegreen", "darkred")) +
   labs(title = "Teilnehmerentwicklung nach Kategorien (relativ)") +
   mytheme
+
 leg <- get_legend(c6 + theme(legend.title = element_blank(),
                              legend.key.size = unit(c(.3), units = "cm"),
                              legend.text = element_text(size = 8),
                              legend.direction = "vertical",
                              legend.background = element_rect(colour = "darkgrey")))
+
 c6 <- c6 + theme(axis.title.y = element_text(),
                  legend.position = "none") 
-
-ggdraw(leg)
 
 #arrange everything on one page
 gridplot1 <- arrangeGrob(c1,

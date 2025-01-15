@@ -37,8 +37,8 @@ for (i in 1:(length(sheets)-1)) {
     pivot_longer(-c("year", "week", "Trainings"), names_to = "ID", values_to = "presence") %>%
     group_by(week, Trainings) %>%
     summarise(sum = sum(presence), .groups = "drop") %>%
-    mutate(type = if_else(sum>0,"Training", "Ferien"))  %>%
-    mutate(type = if_else(week=="99", "Turnier", type))
+    mutate(type = if_else(sum > 0, "Training", "Ferien"))  %>%
+    mutate(type = if_else(week == "99", "Turnier", type))
   
   # move to next iteration if no trainings available (e.g. current year)
   if ((trainings %>% summarise(sum = sum(sum)))$sum == 0) next
@@ -72,12 +72,12 @@ for (i in 1:(length(sheets)-1)) {
     summarise(n=sum(n), .groups = "drop") %>%
     filter(Trainings==1)
   
-  quote <- data_train$n / n_train$n
+  quote <- n_train$n / data_train$n
   if (quote < 1) {
     #then we have a mismatch between effective trainings and trainings with data
     #first we define which weeks are missing
     mw <- single %>% 
-      filter(Trainings==0&type=="Training") %>% 
+      filter(Trainings == 1 & type == "Ferien") %>% 
       distinct(week)
     #then how many attendances per person have to be added (except Irene)
     ma <- single %>%
@@ -133,7 +133,9 @@ for (i in 1:(length(sheets)-1)) {
   }
  
   #remove column Trainings
-  single <- single %>% select(-Trainings)
+  single <- single |> 
+    mutate(type = if_else(Trainings == 1, "Training", type)) |> 
+    select(-Trainings)
 
   #add to the overall tibble
   if (!exists("stats")) {
