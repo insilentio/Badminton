@@ -14,7 +14,7 @@ events <- c(as.character(c(1:52, 99)))
 sheets <- excel_sheets(path)
 if (exists("stats")) rm(stats)
 for (i in 1:(length(sheets)-1)) {
-  single <- read_excel(path, sheet = sheets[i], range="A5:BG50", col_names = cn)
+  single <- read_excel(path, sheet = sheets[i], range="A5:BG60", col_names = cn)
 
   #tidy it up
   #replace all x's with 1, name the sheets with resp. year, name cols, filter lot of rows and
