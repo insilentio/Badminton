@@ -166,8 +166,3 @@ stamm <- stamm %>%
   rename(n_years = JahreaktivimVerein, since = Mitgliedseit) %>%
   mutate(across(c("year", "n_years"), as.numeric)) %>%
   filter(!is.na(ID))
-
-
-# remove non-members from stats
-stats <- stats |> 
-  inner_join(stamm |> select(ID) |> unique(), by = "ID")
