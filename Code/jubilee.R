@@ -104,7 +104,7 @@ jub3d <- jub3c +
                      expand = c(0,0))
 
 # longest streak (with interrupted y scale :-( )
-jub4 <- stats %>%
+jub4stats <- stats %>%
   filter(type != "Ferien", ID != "Gäste div.", ID != "Passive div.") %>%
   arrange(ID, year, week) %>%
   mutate(lags = if_else(lag(presence, default = 0) == 1, 0, 1)) %>%
@@ -116,16 +116,21 @@ jub4 <- stats %>%
   filter(maxstreak != 0) %>%
   left_join(stamm %>% distinct(ID, .keep_all = TRUE), by = "ID") %>%
   mutate(Vorname = paste0(Vorname, " ", substr(ID,1,1), ".")) %>%
-  mutate(Vorname = factor(Vorname, levels = Vorname)) %>%
-  ggplot() +
+  mutate(Vorname = factor(Vorname, levels = Vorname))
+# some helper variables to determine senseful limits for the chart
+upper <- ((jub4stats |> select(maxstreak) |> max()) %/% 10 + 1) * 10
+lower <- ((jub4stats |> select(maxstreak) |> max()) %/% 10) * 10
+upper2 <- ((jub4stats |> select(maxstreak) |> arrange(desc(maxstreak)) |> slice(2) |> pull()) %/% 10 + 1) * 10
+
+jub4 <- ggplot(jub4stats) +
     aes(x = Vorname, y = maxstreak) +
     geom_col(fill = "steelblue") +
     mytheme +
     ggtitle("Longest streak") +
-    scale_y_continuous(limits = c(0,130),
-                       breaks = seq(0, 130,10),
-                       minor_breaks = seq(0, 130, 2)) +
-    scale_y_break(breaks = c(40, 120), expand = expansion(mult = c(.02, .02)))
+    scale_y_continuous(limits = c(0,upper),
+                       breaks = seq(0, upper,10),
+                       minor_breaks = seq(0, upper, 2)) +
+    scale_y_break(breaks = c(upper2, lower), expand = expansion(mult = c(.02, .02)))
 
 # some informative values -------------------------------------------------
 # mean visits by sex
@@ -190,3 +195,4 @@ gridslide8 <- arrangeGrob(jub2,
 gridslide9 <- arrangeGrob(jub1,
                           heights = 1,
                           layout_matrix = rbind(c(1)))
+
