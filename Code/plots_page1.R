@@ -60,6 +60,7 @@ c3 <- stats %>%
   na.omit() %>%
   ggplot() +
     aes(x = week, y = value, colour = type) +
+    geom_hline(yintercept = 16) +
     geom_line() +
     xlab(label = "Woche") +
     scale_y_continuous(limits = c(8,24),
@@ -74,7 +75,7 @@ c3 <- stats %>%
     mytheme +
     theme(legend.title = element_blank(),
           legend.position = "inside",
-          legend.position.inside = c(.2,.95),
+          # legend.position.inside = c(.2,.95),
           legend.direction = "horizontal",
           panel.grid.major.x = element_line(),
           panel.grid.minor.x = element_line(),
@@ -118,7 +119,7 @@ c5 <- ggplot(present) +
   scale_y_continuous(limits = c(0,600),
                      breaks = seq(0,600,100),
                      minor_breaks = seq(0, 600, 25),
-                     sec.axis = sec_axis(transform = ~ .x/scaler, name = "Mittelwert")) +
+                     sec.axis = sec_axis(trans = ~ .x/scaler, name = "Mittelwert")) +
   scale_x_continuous(breaks = c(minyear:maxyear)) +
   scale_fill_manual(values = c("steelblue", "limegreen", "darkred")) +
   labs(title = "Teilnehmerentwicklung nach Kategorien (absolut)")
