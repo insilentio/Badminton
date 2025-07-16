@@ -64,6 +64,7 @@ maxyear <- max(stats$year)
 #only currently active members
 actives <- stamm %>%
   filter(year == maxyear & status == "a") %>%
+  mutate(Vorname = paste0(Vorname, " ", substr(Nachname, 1, 1), ".")) %>%
   select(ID, sex, status, n_years, Vorname, since) %>%
   arrange(desc(n_years)) %>%
   mutate(ID = factor(ID, levels = ID), Vorname = factor(Vorname, levels = Vorname)) |> 
