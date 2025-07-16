@@ -71,7 +71,7 @@ jub3 <- stats %>%
   mytheme +
   theme(legend.title = element_blank(),
         legend.position = "inside",
-        legend.position.inside = c(.2,.95),
+        # legend.position.inside = c(.2,.95),
         legend.direction = "horizontal",
         panel.grid.major.x = element_line(),
         panel.grid.minor.x = element_line(),
@@ -94,7 +94,7 @@ grouped_data <- stats %>%
 # manually: change the value in scale_colour_manual to the currently active members value
 jub3b <- jub3 +
   theme(legend.position = "none") +
-  scale_colour_manual(values = rep("lightgrey", 21))
+  scale_colour_manual(values = rep("lightgrey", 22))
 jub3c <- jub3b +
   geom_line(data = grouped_data, mapping = aes(x = week, y = presence)) +
   geom_smooth(data = grouped_data, mapping = aes(x = week, y = presence),  method = "loess", se = TRUE, level = .9)
@@ -104,7 +104,9 @@ jub3d <- jub3c +
                      expand = c(0,0))
 
 # longest streak (with interrupted y scale :-( )
-jub4stats <- stats %>%
+# only members from stamm relevant
+jub4stats <- stats |> 
+  inner_join(stamm |> select(ID) |> unique(), by = "ID") |>
   filter(type != "Ferien", ID != "Gäste div.", ID != "Passive div.") %>%
   arrange(ID, year, week) %>%
   mutate(lags = if_else(lag(presence, default = 0) == 1, 0, 1)) %>%
