@@ -19,8 +19,8 @@ for (i in 1:(length(sheets)-1)) {
   #tidy it up
   #replace all x's with 1, name the sheets with resp. year, name cols, filter lot of rows and
   #finally gather all together
-  single <- single |> 
-          replace(. == "x", "1") |>
+  single <- single %>%
+          replace(. == "x", "1") %>%
           replace(. == "Total Trainings", "Trainings") |>
           mutate(year=sheets[i]) |>
           select("ID", "year", all_of(events)) |>
@@ -97,7 +97,7 @@ for (i in 1:(length(sheets)-1)) {
           fill_ins <- mw$week * ma[j,]$interpoliert
         }
         single <- single |> 
-          mutate(presence = if_else(ID == ma[j,]$ID & week %in% fill_ins,1,presence))
+          mutate(presence = if_else(ID == ma[j,]$ID & week %in% fill_ins, 1, presence))
       }
       #now separately impute for Gäste and Passive
       if (ma[j,]$ID == "Gäste div." | ma[j,]$ID == "Passive div.") {
@@ -120,7 +120,7 @@ for (i in 1:(length(sheets)-1)) {
         trs <- rep(nr_att, length(fill_ins))
         #now check for leftovers (from flooring for average) and distribute randomly
         while (ma[j,]$interpoliert - sum(trs) != 0) {
-          k <- sample(1:length(trs),1)
+          k <- sample(1:length(trs), 1)
           trs[k] <- trs[k] + 1
         }
 
