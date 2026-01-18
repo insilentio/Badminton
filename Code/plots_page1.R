@@ -1,37 +1,37 @@
 # plots first page
 # data prep
 
-present <- stats %>%
-  left_join(stamm, by = c("ID", "year")) %>%
+present <- stats |>
+  left_join(stamm, by = c("ID", "year")) |>
   mutate(cat = case_when(status == "a" ~ "Aktive",
                          status == "p" ~ "Passive",
                          status == "g" ~ "Gäste",
                          ID == "Gäste div." ~ "Gäste",
-                         ID == "Passive div." ~ "Passive")) %>%
-  group_by(year, cat) %>% 
+                         ID == "Passive div." ~ "Passive")) |>
+  group_by(year, cat) |> 
   summarise(presence = sum(presence), .groups = "drop")
 
-totals <- stats %>%
-  filter(type == "Training") %>%
-  group_by(year, week) %>%
-  summarise(presence = sum(presence), .groups = "drop_last") %>%
+totals <- stats |>
+  filter(type == "Training") |>
+  group_by(year, week) |>
+  summarise(presence = sum(presence), .groups = "drop_last") |>
   summarise(tot = sum(presence), mean = mean(presence), .groups = "drop")
 
-present <- present %>%
+present <- present |>
   left_join(totals, by = "year")
 
 #plots
 #try to replicate excel table. Not so easy, therefore for the moment switched to a solution
 #where excel table must be imported as a PNG
-# stats %>%
-#   filter(year == maxyear) %>%
+# stats |>
+#   filter(year == maxyear) |>
 #   mutate(presence = ifelse(presence == 0, NA, presence),
-#          presence = ifelse(type == "Ferien", "F", presence)) %>%
-#   left_join(stamm, by = c("ID", "year")) %>%
-#   select(ID, Vorname, Nachname, week, presence) %>%
+#          presence = ifelse(type == "Ferien", "F", presence)) |>
+#   left_join(stamm, by = c("ID", "year")) |>
+#   select(ID, Vorname, Nachname, week, presence) |>
 #   pivot_wider(id_cols = c(1:4), names_from = week, values_from = presence)
 
-# pdf_render_page("Data/BCT_Excel.pdf", dpi = 300) %>%
+# pdf_render_page("Data/BCT_Excel.pdf", dpi = 300) |>
 #   writePNG("Data/BCT_Excel.png")
 
 c1 <- ggdraw() +
@@ -49,27 +49,33 @@ c2 <- ggplot(kpi) +
         axis.text.x = element_blank()) +
   labs(title = "Jahres-KPIs")
 
-c3 <- stats %>%
-  filter(year == maxyear) %>%
-  mutate(train = ifelse(type == "Training", 1, 0)) %>%
-  group_by(week, train) %>%
-  summarise(presence = sum(presence), .groups  = "drop") %>%
-  mutate(cum = cumsum(presence), roll = cum/cumsum(train)) %>%
-  mutate(presence = ifelse(presence == 0, NA, presence)) %>%
-  pivot_longer(cols = c("presence", "roll"), names_to = "type", values_to = "value") %>%
-  na.omit() %>%
+c3 <- stats |> 
+  filter(year == maxyear) |>
+  mutate(train = ifelse(type == "Training", 1, 0)) |>
+  group_by(week, train) |>
+  summarise(presence = sum(presence), .groups  = "drop") |>
+  mutate(cum = cumsum(presence), roll = cum/cumsum(train)) |>
+  mutate(presence = ifelse(presence == 0, NA, presence)) |>
+  pivot_longer(cols = c("presence", "roll"), names_to = "type", values_to = "value") |>
+  na.omit()
+
+lim_upper <- max(c3$value)
+lim_lower <- min(c3$value)
+if ((lim_upper - lim_lower) %% 2 == 1) lim_lower <- lim_lower - 1
+
+c3 <- c3 |> 
   ggplot() +
     aes(x = week, y = value, colour = type) +
     geom_hline(yintercept = 16) +
     geom_line() +
     xlab(label = "Woche") +
-    scale_y_continuous(limits = c(8,24),
-                       breaks = seq(8,24,2),
-                       expand = c(0,0)) +
-    scale_x_continuous(limits = c(1,52),
-                       breaks = c(1,10, 20, 30, 40, 50),
-                       minor_breaks = seq(2,52,2),
-                       expand = c(0,0)) +
+    scale_y_continuous(limits = c(lim_lower, lim_upper),
+                       breaks = seq(lim_lower, lim_upper, 2),
+                       expand = c(0, 0)) +
+    scale_x_continuous(limits = c(1, 52),
+                       breaks = c(1, 10, 20, 30, 40, 50),
+                       minor_breaks = seq(2, 52, 2),
+                       expand = c(0, 0)) +
     scale_colour_manual(labels = c("Anz. Besucher", "kum. Mittelwert"),
                         values = c("purple", "red")) +
     mytheme +
@@ -84,11 +90,11 @@ c3 <- stats %>%
           plot.margin = unit(c(.3, .3, 0, .3), "cm"))
 
 # without unpersonal values
-c4 <- stats %>%
-  filter(!ID %in% c("Gäste div.", "Passive div.")) %>%
-  filter(year %in% c(maxyear, maxyear-1, maxyear-2, maxyear-3)) %>%
-  group_by(year, ID) %>%
-  summarise(presence = sum(presence), .groups = "drop") %>%
+c4 <- stats |>
+  filter(!ID %in% c("Gäste div.", "Passive div.")) |>
+  filter(year %in% c(maxyear, maxyear-1, maxyear-2, maxyear-3)) |>
+  group_by(year, ID) |>
+  summarise(presence = sum(presence), .groups = "drop") |>
   ggplot() +
     aes(x = as.factor(year), y = presence) +
     geom_boxplot(width = .5)  +
@@ -112,17 +118,17 @@ c5 <- ggplot(present) +
             inherit.aes = FALSE,
             size = 2) +
   geom_line(aes(y = mean*scaler), color = "pink") +
-  mytheme +
-  theme(axis.title.y = element_text(),
-        legend.position = "none") +
   labs(fill = "Kategorie", y = "Anz. Teilnehmer") +
-  scale_y_continuous(limits = c(0,600),
-                     breaks = seq(0,600,100),
-                     minor_breaks = seq(0, 600, 25),
-                     sec.axis = sec_axis(trans = ~ .x/scaler, name = "Mittelwert")) +
+  scale_y_continuous(limits = c(0, 700),
+                     breaks = seq(0, 700, 100),
+                     minor_breaks = seq(0, 700, 25),
+                     sec.axis = sec_axis(trans = ~ .x/scaler)) +
   scale_x_continuous(breaks = c(minyear:maxyear)) +
   scale_fill_manual(values = c("steelblue", "limegreen", "darkred")) +
-  labs(title = "Teilnehmerentwicklung nach Kategorien (absolut)")
+  labs(title = "Teilnehmerentwicklung nach Kategorien (absolut)") +
+  mytheme +
+  theme(axis.title.y = element_text(),
+        legend.position = "none")
 
 
 c6 <- ggplot(present) +
@@ -130,7 +136,7 @@ c6 <- ggplot(present) +
   geom_col(position = position_fill())  +
   geom_text(aes(label = round(presence/tot, 2)),
             position = position_fill(vjust = .5),
-            size = 2)+
+            size = 2) +
   labs(fill = "Kategorie", y = "Ant. Teilnehmer") +
   scale_x_continuous(breaks = c(minyear:maxyear)) +
   scale_y_continuous(labels = percent_format()) +
