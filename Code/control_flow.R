@@ -22,7 +22,7 @@ mytheme <- theme_minimal() +
         text = element_text(colour = "darkgrey"),
         plot.title = element_text(colour = "darkgrey", size = 11, hjust = 0.5),
         plot.subtitle = element_text(colour = "darkgrey", size = 9, hjust = 0.5),
-        plot.margin = unit(rep(.3,4), "cm"),
+        plot.margin = unit(rep(0.3, 4), "cm"),
         # plot.background = element_rect(colour = "darkgrey", fill=NA, linewidth =.5),
         panel.background = element_rect(fill = 'white', colour = 'white'))
 
