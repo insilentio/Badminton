@@ -122,7 +122,7 @@ c5 <- ggplot(present) +
   scale_y_continuous(limits = c(0, 700),
                      breaks = seq(0, 700, 100),
                      minor_breaks = seq(0, 700, 25),
-                     sec.axis = sec_axis(trans = ~ .x/scaler)) +
+                     sec.axis = sec_axis(transform = ~ .x/scaler)) +
   scale_x_continuous(breaks = c(minyear:maxyear)) +
   scale_fill_manual(values = c("steelblue", "limegreen", "darkred")) +
   labs(title = "Teilnehmerentwicklung nach Kategorien (absolut)") +
