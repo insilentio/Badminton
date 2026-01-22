@@ -1,19 +1,7 @@
 #plots second page
 #
-#overall mean attendance plot
-stats |>
-  group_by(year,week) |>
-  summarise(sum=sum(presence), .groups = "drop") |>
-  group_by(week) |>
-  summarise(mean=mean(sum), .groups = "drop") |>
-  ggplot() +
-    aes(x=week, y=mean) +
-    geom_line() +
-    xlim(c(1,52)) +
-    scale_y_continuous(breaks = c(0:12), limits = c(0,12))
 
 #generate the plots for the Teilnehmerstatistik
-
 p1 <- actives |>
   left_join(cumvisits, by = "ID", keep = TRUE) |>
   select(Vorname, n) |>
@@ -91,8 +79,3 @@ p5c <- ggplot(figs) +
   theme_void()
 
 p5 <- arrangeGrob(p5a, p5b, p5c, nrow = 3)
-
-#arrange everything on one page
-gridplot2 <- arrangeGrob(p1, p2, p3, p4, p5,
-                          heights = c(4,4,1),
-                          layout_matrix = rbind(c(1,2), c(3,4), c(5)))

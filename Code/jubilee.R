@@ -1,5 +1,4 @@
-# some additional charts for the 2024 GV (20 years of statistics)
-
+# some additional charts introduced for the 2024 GV (20 years of statistics)
 
 # prep work ---------------------------------------------------------------
 
@@ -9,14 +8,6 @@ actives2004plus <- stamm |>
   distinct(ID, sex, status, n_years, Vorname, since) |>
   arrange(desc(n_years)) |>
   mutate(ID = factor(ID, levels = ID), Vorname = paste0(Vorname, " ", substr(ID,1,1), "."))
-
-# all active members ever (currently not used)
-actives4ever <- stamm |>
-  filter(status == "a", !is.na(since)) |>
-  distinct(ID, sex, status, n_years, Vorname, since) |>
-  arrange((n_years)) |>
-  mutate(ID = factor(ID, levels = ID), Vorname = paste0(Vorname, " ", substr(ID,1,1), "."), since = as.numeric(since)) |>
-  add_row(tibble(ID = NA, sex = NA, status = NA, n_years = NA, Vorname = NA, since = (c(1980:maxyear+1))))
 
 
 # charts ------------------------------------------------------------------
@@ -154,8 +145,9 @@ jub4 <- ggplot(jub4stats) +
 
 
 # some informative values -------------------------------------------------
+# not used in output currently
 # mean visits by sex
-jub5 <- stats |>
+info1 <- stats |>
   group_by(ID, year) |>
   summarise(visits = sum(presence), .groups = "drop_last") |>
   inner_join(actives, by = "ID", keep = TRUE, suffix = c(".x", "")) |>
@@ -163,57 +155,7 @@ jub5 <- stats |>
   summarize(meanvisits = mean(visits))
 
 # top dates regarding nr. of visits
-jub6 <- stats |>
+info2 <- stats |>
   group_by(year, week) |>
   summarize(nr = sum(presence), .groups = "drop") |>
   arrange(desc(nr))
-  
-
-
-# slides ------------------------------------------------------------------
-
-gridslide1 <- arrangeGrob(c1,
-                         arrangeGrob(ggplot() + mytheme, c3, ggplot() + mytheme,
-                                     widths = c(1 , 6.5, 1)),
-                         heights = c(5,2),
-                         layout_matrix = rbind(c(1), c(2)))
-
-gridslide2 <- arrangeGrob(arrangeGrob(arrangeGrob(ggplot() + mytheme, c2, ggplot() + mytheme,
-                                                  heights = c(1 , 8, 1)), c4,
-                                      widths = c(3, 7)) ,
-                          p5,
-                          heights = c(10,2),
-                          layout_matrix = rbind(1, 2))
-
-# including the legend on top of the other charts is a bit cumbersome
-gridslide3 <- arrangeGrob(c5, c6,
-                          heights = c(1, 1),
-                          layout_matrix = rbind(1, 2)) |> 
-                ggdraw() +
-                  theme(plot.background = element_rect(fill="white", color = "white")) +
-                  draw_grob(leg, x = 0.45)
-
-gridslide4 <- arrangeGrob(p2,
-                          heights = 1,
-                          layout_matrix = rbind(c(1)))
-
-gridslide5 <- arrangeGrob(p1,
-                          heights = 1,
-                          layout_matrix = rbind(c(1)))
-
-gridslide6 <- arrangeGrob(p3,
-                          heights = 1,
-                          layout_matrix = rbind(c(1)))
-
-gridslide7 <- arrangeGrob(p4,
-                          heights = 1,
-                          layout_matrix = rbind(c(1)))
-
-gridslide8 <- arrangeGrob(jub2,
-                          heights = 1,
-                          layout_matrix = rbind(c(1)))
-
-gridslide9 <- arrangeGrob(jub1,
-                          heights = 1,
-                          layout_matrix = rbind(c(1)))
-
