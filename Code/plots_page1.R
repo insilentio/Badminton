@@ -85,8 +85,9 @@ c3 <- stats |>
                        breaks = c(1, 10, 20, 30, 40, 50),
                        minor_breaks = seq(2, 52, 2),
                        expand = c(0, 0)) +
-    scale_fill_manual(values = c("#4EAD5B", "#2F6EBA")) +
-    scale_colour_manual(values = c("#B02418")) +
+  # following line is not dynamic, i.e. if there are passive visits, it won't work
+    scale_fill_manual(values = c(col_g, col_a)) +
+    scale_colour_manual(values = c(col_mw)) +
     mytheme +
     theme(legend.position = "none",
           #legend.title = element_blank(),
@@ -109,13 +110,13 @@ c4 <- stats |>
   ggplot() +
     aes(x = as.factor(year), y = presence) +
     geom_boxplot(width = .5)  +
-    stat_summary(fun = mean, geom = "point", size = 1, shape = 3, colour = "steelblue", show.legend = TRUE) +
+    stat_summary(fun = mean, geom = "point", size = 1, shape = 3, colour = col_a, show.legend = TRUE) +
     mytheme +
     theme(axis.text.x = element_text(angle = 0, hjust = 0.5)) +
     scale_y_continuous(limits = c(0,40),
                        breaks = seq(0,40,10),
                        minor_breaks = seq(0,40,2)) +
-    labs(title = "Teilnahmehäufigkeit")
+    labs(title = "Teilnahmehäufigkeit der Aktivmitglieder")
 
 scaler = 30
 c5 <- ggplot(present) +
@@ -123,11 +124,11 @@ c5 <- ggplot(present) +
   geom_col() +
   geom_text(aes(label = presence),
             position = position_stack(vjust = .5),
-            size = 2) +
+            size = 3) +
   geom_text(aes(x = year, y = tot, label = tot),
             nudge_y = 10,
             inherit.aes = FALSE,
-            size = 2) +
+            size = 3) +
   geom_line(aes(y = mean*scaler), color = "pink") +
   labs(fill = "Kategorie", y = "Anz. Teilnehmer") +
   scale_y_continuous(limits = c(0, 700),
@@ -135,7 +136,7 @@ c5 <- ggplot(present) +
                      minor_breaks = seq(0, 700, 25),
                      sec.axis = sec_axis(transform = ~ .x/scaler)) +
   scale_x_continuous(breaks = c(minyear:maxyear)) +
-  scale_fill_manual(values = c("steelblue", "limegreen", "darkred")) +
+  scale_fill_manual(values = c(col_a, col_g, col_p)) +
   labs(title = "Teilnehmerentwicklung nach Kategorien (absolut)") +
   mytheme +
   theme(axis.title.y = element_text(),
@@ -147,11 +148,12 @@ c6 <- ggplot(present) +
   geom_col(position = position_fill())  +
   geom_text(aes(label = round(presence/tot, 2)),
             position = position_fill(vjust = .5),
-            size = 2) +
+            size = 3) +
   labs(fill = "Kategorie", y = "Ant. Teilnehmer") +
   scale_x_continuous(breaks = c(minyear:maxyear)) +
-  scale_y_continuous(labels = percent_format()) +
-  scale_fill_manual(values = c("steelblue", "limegreen", "darkred")) +
+  scale_y_continuous(labels = percent_format(),
+                     breaks = seq(0, 1, .2)) +
+  scale_fill_manual(values = c(col_a, col_g, col_p)) +
   labs(title = "Teilnehmerentwicklung nach Kategorien (relativ)") +
   mytheme
 

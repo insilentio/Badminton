@@ -8,7 +8,7 @@ p1 <- actives |>
   waterfall(draw_lines = FALSE,
             rect_width = .9,
             rect_border = NA,
-            fill_colours = rep("steelblue", nrow(actives)),
+            fill_colours = rep(col_a, nrow(actives)),
             fill_by_sign = FALSE) +
   mytheme +
   ggtitle("Kumulierte Teilnahmen der Aktivmitglieder seit 2004")
@@ -20,7 +20,7 @@ p2 <- actives |>
   mutate(avgperyear = n_active/activeYearsSince2004) |> 
 ggplot() +
   aes(x = Vorname, y = n_years) +
-  geom_col(fill = "steelblue") +
+  geom_col(fill = col_a) +
   geom_point(aes(x = Vorname, y = avgperyear), color = "darkblue") +
   geom_text(aes(x = Vorname, y = n_years, label = since),
             hjust = 1, angle = 90, colour= "darkgrey") +
@@ -40,7 +40,7 @@ p3 <- stats |>
   ggplot() +
     aes(x = Vorname, y = visits) +
     geom_boxplot(outlier.size = 1, outlier.alpha = .5, coef = 100, width = .5) +
-    stat_summary(fun = mean, geom = "point", size = 1, shape = 3, colour = "steelblue", show.legend = TRUE) +
+    stat_summary(fun = mean, geom = "point", size = 1, shape = 3, colour = col_a, show.legend = TRUE) +
     mytheme +
     labs(title = "Persönliche Besuchsbandbreite seit 2004",
          subtitle = "in % der Jahresanzahl Trainings") +
@@ -58,7 +58,7 @@ p4 <- stats |>
   ggplot() +
     aes(x = Vorname.y, y = rank) +
     geom_boxplot(coef = 100, width = .5) +
-    stat_summary(fun = mean, geom = "point", size = 1, shape = 3, colour = "steelblue", show.legend = TRUE) +
+    stat_summary(fun = mean, geom = "point", size = 1, shape = 3, colour = col_a, show.legend = TRUE) +
     mytheme +
     labs(title = "Persönliche Rankingbandbreite seit 2004",
          subtitle = "") +
@@ -68,14 +68,17 @@ p4 <- stats |>
 p5a <- ggplot(figs) +
   aes(x = cat, y = 1, label = head) +
   geom_text(size = 3, colour = "darkgrey") +
-  theme_void()
+  theme_void() +
+  theme(panel.background = element_rect(fill = "white", color = "white"))
 p5b <- ggplot(figs) +
   aes(x = cat, y = 1, label = value) +
   geom_text(size = 8) +
-  theme_void()
+  theme_void() +
+  theme(panel.background = element_rect(fill = "white", color = "white"))
 p5c <- ggplot(figs) +
   aes(x = cat, y = 1, label = cat) +
   geom_text(size = 3, colour = "darkgrey") +
-  theme_void()
+  theme_void() +
+  theme(panel.background = element_rect(fill = "white", color = "white"))
 
 p5 <- arrangeGrob(p5a, p5b, p5c, nrow = 3)
