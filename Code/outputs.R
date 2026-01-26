@@ -1,6 +1,7 @@
 
 # old version -------------------------------------------------------------
 # this was a 2-pager pdf with lots of plots stuffed neetly into it
+# not used anymore since we switched to live presentations in 2024
 
 #arrange everything on first page
 gridplot1 <- arrangeGrob(c1,
@@ -24,14 +25,17 @@ dev.off()
 # this creates png which can be directly inserted as slides into a presentation
 
 gridslide1 <- arrangeGrob(c1,
-                          arrangeGrob(ggplot() + mytheme, c3, ggplot() + mytheme,
+                          arrangeGrob(ggplot() + mytheme,
+                                      c3,
+                                      ggplot() + mytheme,
                                       widths = c(.87 , 6.3, 1)),
                           heights = c(5,2),
                           layout_matrix = rbind(c(1), c(2)))
 
-gridslide2 <- arrangeGrob(arrangeGrob(arrangeGrob(ggplot() + mytheme, c2, ggplot() + mytheme,
-                                                  heights = c(1 , 8, 1)), c4,
-                                      widths = c(3, 7)) ,
+gridslide2 <- arrangeGrob(arrangeGrob(ggplot() + mytheme,
+                                      arrangeGrob(c2, c4, widths = c(3, 7)),
+                                      ggplot() + mytheme,
+                                      heights = c(1 , 8, 1)),
                           p5,
                           heights = c(10,2),
                           layout_matrix = rbind(1, 2))
@@ -56,29 +60,41 @@ gridslide6 <- arrangeGrob(p3,
                           heights = 1,
                           layout_matrix = rbind(c(1)))
 
-gridslide7 <- arrangeGrob(p4,
+
+# this one directly, because arrangeGrob does not work with ggbreak
+gridslide7 <- jub4
+
+
+gridslide_ext1 <- arrangeGrob(jub2,
                           heights = 1,
                           layout_matrix = rbind(c(1)))
 
-gridslide8 <- arrangeGrob(jub2,
+gridslide_ext2 <- arrangeGrob(jub1,
+                              heights = 1,
+                              layout_matrix = rbind(c(1)))
+
+gridslide_ext3 <- arrangeGrob(p4,
                           heights = 1,
                           layout_matrix = rbind(c(1)))
 
-gridslide9 <- arrangeGrob(jub1,
-                          heights = 1,
-                          layout_matrix = rbind(c(1)))
+gridslide_ext4 <- arrangeGrob(jub3c,
+                              heights = 1,
+                              layout_matrix = rbind(c(1)))
 
 
 # save slides as png's for presentation
-for (i in 1:9) {
+for (i in 1:7) {
   ggsave(paste0("Output/Slides", i, ".png"),
          get(paste0("gridslide", i)),
          device = png(),
          width = 16, height = 9)
 }
-# this one directly, because arrangeGrob does not work with ggbreak
-ggsave(paste0("Output/Slides10.png"),
-       jub4,
-       device = png(),
-       width = 16, height = 9)
+
+for (i in 1:4) {
+  ggsave(paste0("Output/SlidesExtra", i, ".png"),
+         get(paste0("gridslide_ext", i)),
+         device = png(),
+         width = 16, height = 9)
+}
+
 

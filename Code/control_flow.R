@@ -26,6 +26,12 @@ mytheme <- theme_minimal() +
         # plot.background = element_rect(colour = "darkgrey", fill=NA, linewidth =.5),
         panel.background = element_rect(fill = 'white', colour = 'white'))
 
+# color definitions for actives, guests, passives
+# (derived from presence file)
+col_a <-  "#2F6EBA"
+col_g <-  "#4EAD5B"
+col_p <-  "#AF7440"
+col_mw <- "#B02418"
 
 # source all code files ---------------------------------------------------
 
