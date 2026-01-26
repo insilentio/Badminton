@@ -1,26 +1,14 @@
 #plots second page
 #
-#overall mean attendance plot
-stats |>
-  group_by(year,week) |>
-  summarise(sum=sum(presence), .groups = "drop") |>
-  group_by(week) |>
-  summarise(mean=mean(sum), .groups = "drop") |>
-  ggplot() +
-    aes(x=week, y=mean) +
-    geom_line() +
-    xlim(c(1,52)) +
-    scale_y_continuous(breaks = c(0:12), limits = c(0,12))
 
 #generate the plots for the Teilnehmerstatistik
-
 p1 <- actives |>
   left_join(cumvisits, by = "ID", keep = TRUE) |>
   select(Vorname, n) |>
   waterfall(draw_lines = FALSE,
             rect_width = .9,
             rect_border = NA,
-            fill_colours = rep("steelblue", nrow(actives)),
+            fill_colours = rep(col_a, nrow(actives)),
             fill_by_sign = FALSE) +
   mytheme +
   ggtitle("Kumulierte Teilnahmen der Aktivmitglieder seit 2004")
@@ -32,7 +20,7 @@ p2 <- actives |>
   mutate(avgperyear = n_active/activeYearsSince2004) |> 
 ggplot() +
   aes(x = Vorname, y = n_years) +
-  geom_col(fill = "steelblue") +
+  geom_col(fill = col_a) +
   geom_point(aes(x = Vorname, y = avgperyear), color = "darkblue") +
   geom_text(aes(x = Vorname, y = n_years, label = since),
             hjust = 1, angle = 90, colour= "darkgrey") +
@@ -52,7 +40,7 @@ p3 <- stats |>
   ggplot() +
     aes(x = Vorname, y = visits) +
     geom_boxplot(outlier.size = 1, outlier.alpha = .5, coef = 100, width = .5) +
-    stat_summary(fun = mean, geom = "point", size = 1, shape = 3, colour = "steelblue", show.legend = TRUE) +
+    stat_summary(fun = mean, geom = "point", size = 1, shape = 3, colour = col_a, show.legend = TRUE) +
     mytheme +
     labs(title = "Persönliche Besuchsbandbreite seit 2004",
          subtitle = "in % der Jahresanzahl Trainings") +
@@ -70,7 +58,7 @@ p4 <- stats |>
   ggplot() +
     aes(x = Vorname.y, y = rank) +
     geom_boxplot(coef = 100, width = .5) +
-    stat_summary(fun = mean, geom = "point", size = 1, shape = 3, colour = "steelblue", show.legend = TRUE) +
+    stat_summary(fun = mean, geom = "point", size = 1, shape = 3, colour = col_a, show.legend = TRUE) +
     mytheme +
     labs(title = "Persönliche Rankingbandbreite seit 2004",
          subtitle = "") +
@@ -80,19 +68,17 @@ p4 <- stats |>
 p5a <- ggplot(figs) +
   aes(x = cat, y = 1, label = head) +
   geom_text(size = 3, colour = "darkgrey") +
-  theme_void()
+  theme_void() +
+  theme(panel.background = element_rect(fill = "white", color = "white"))
 p5b <- ggplot(figs) +
   aes(x = cat, y = 1, label = value) +
   geom_text(size = 8) +
-  theme_void()
+  theme_void() +
+  theme(panel.background = element_rect(fill = "white", color = "white"))
 p5c <- ggplot(figs) +
   aes(x = cat, y = 1, label = cat) +
   geom_text(size = 3, colour = "darkgrey") +
-  theme_void()
+  theme_void() +
+  theme(panel.background = element_rect(fill = "white", color = "white"))
 
 p5 <- arrangeGrob(p5a, p5b, p5c, nrow = 3)
-
-#arrange everything on one page
-gridplot2 <- arrangeGrob(p1, p2, p3, p4, p5,
-                          heights = c(4,4,1),
-                          layout_matrix = rbind(c(1,2), c(3,4), c(5)))

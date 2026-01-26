@@ -41,7 +41,7 @@ c2 <- ggplot(kpi) +
     aes(y = idx) +
     geom_text(aes(x = .2, label = values), size = 4, hjust = 1) +
     geom_text(aes(x = .25, label = desc), size = 4, hjust = 0) +
-    scale_y_continuous(limits = c(0, 9)) +
+    scale_y_continuous(limits = c(0, 11)) +
     scale_x_continuous(limits = c(0, 1)) +
   mytheme +
   theme(panel.grid = element_blank(),
@@ -49,45 +49,57 @@ c2 <- ggplot(kpi) +
         axis.text.x = element_blank()) +
   labs(title = "Jahres-KPIs")
 
-c3 <- stats |> 
-  filter(year == maxyear) |>
+# stacked bar chart with particpation over year plus rolling average
+rolling <- stats |> 
+  filter(year == maxyear, type == "Training") |>
   mutate(train = ifelse(type == "Training", 1, 0)) |>
   group_by(week, train) |>
   summarise(presence = sum(presence), .groups  = "drop") |>
   mutate(cum = cumsum(presence), roll = cum/cumsum(train)) |>
   mutate(presence = ifelse(presence == 0, NA, presence)) |>
-  pivot_longer(cols = c("presence", "roll"), names_to = "type", values_to = "value") |>
+  select(week, presence, roll) |> 
+  pivot_longer(cols = c("presence", "roll"), names_to = "status", values_to = "value") |>
   na.omit()
 
-lim_upper <- max(c3$value)
-lim_lower <- min(c3$value)
-if ((lim_upper - lim_lower) %% 2 == 1) lim_lower <- lim_lower - 1
-
-c3 <- c3 |> 
+lim_upper <- max(rolling$value)
+c3 <- stats |> 
+  left_join(stamm |> select(ID, year, status), by = c("ID", "year")) |> 
+  filter(year == maxyear, type == "Training") |>
+  mutate(status = ifelse(ID == "Gäste div.", "g", status)) |> 
+  mutate(status = ifelse(ID == "Passive div.", "p", status)) |> 
+  mutate(status = factor(status, c("g", "p", "a"), c("Gäste", "Passive", "Aktive"))) |> 
+  group_by(week, status) |>
+  summarise(value = sum(presence), .groups  = "drop") |>
+  mutate(value = ifelse(value == 0, NA, value)) |>
+  na.omit() |> 
   ggplot() +
-    aes(x = week, y = value, colour = type) +
-    geom_hline(yintercept = 16) +
-    geom_line() +
+    geom_col(aes(x = week, y = value, fill = status)) +
+    geom_line(data = rolling |> filter(status == "roll"),
+            mapping = aes(x = week, y = value, colour = status)) +
     xlab(label = "Woche") +
-    scale_y_continuous(limits = c(lim_lower, lim_upper),
-                       breaks = seq(lim_lower, lim_upper, 2),
+    scale_y_continuous(limits = c(0, lim_upper),
+                       breaks = c(seq(0, lim_upper, 2), lim_upper),
+                       minor_breaks = seq(1, lim_upper),
                        expand = c(0, 0)) +
-    scale_x_continuous(limits = c(1, 52),
+    scale_x_continuous(limits = c(0, 52),
                        breaks = c(1, 10, 20, 30, 40, 50),
                        minor_breaks = seq(2, 52, 2),
                        expand = c(0, 0)) +
-    scale_colour_manual(labels = c("Anz. Besucher", "kum. Mittelwert"),
-                        values = c("purple", "red")) +
+  # following line is not dynamic, i.e. if there are passive visits, it won't work
+    scale_fill_manual(values = c(col_g, col_a)) +
+    scale_colour_manual(values = c(col_mw)) +
     mytheme +
-    theme(legend.title = element_blank(),
-          legend.position = "inside",
-          # legend.position.inside = c(.2,.95),
-          legend.direction = "horizontal",
+    theme(legend.position = "none",
+          #legend.title = element_blank(),
+          # legend.position = "inside",
+          # legend.position.inside = c(.5,1),
+          # legend.direction = "horizontal",
           panel.grid.major.x = element_line(),
           panel.grid.minor.x = element_line(),
           axis.text.x = element_text(angle = 0, vjust = 0, hjust = 0.5),
           axis.title.x = element_text(vjust = 6, hjust = .5),
-          plot.margin = unit(c(.3, .3, 0, .3), "cm"))
+          plot.margin = unit(c(.3, .3, 0, .3), "cm"))+
+  geom_hline(yintercept = 16)
 
 # without unpersonal values
 c4 <- stats |>
@@ -98,13 +110,13 @@ c4 <- stats |>
   ggplot() +
     aes(x = as.factor(year), y = presence) +
     geom_boxplot(width = .5)  +
-    stat_summary(fun = mean, geom = "point", size = 1, shape = 3, colour = "steelblue", show.legend = TRUE) +
+    stat_summary(fun = mean, geom = "point", size = 1, shape = 3, colour = col_a, show.legend = TRUE) +
     mytheme +
     theme(axis.text.x = element_text(angle = 0, hjust = 0.5)) +
     scale_y_continuous(limits = c(0,40),
                        breaks = seq(0,40,10),
                        minor_breaks = seq(0,40,2)) +
-    labs(title = "Teilnahmehäufigkeit")
+    labs(title = "Teilnahmehäufigkeit der Aktivmitglieder")
 
 scaler = 30
 c5 <- ggplot(present) +
@@ -112,11 +124,11 @@ c5 <- ggplot(present) +
   geom_col() +
   geom_text(aes(label = presence),
             position = position_stack(vjust = .5),
-            size = 2) +
+            size = 3) +
   geom_text(aes(x = year, y = tot, label = tot),
             nudge_y = 10,
             inherit.aes = FALSE,
-            size = 2) +
+            size = 3) +
   geom_line(aes(y = mean*scaler), color = "pink") +
   labs(fill = "Kategorie", y = "Anz. Teilnehmer") +
   scale_y_continuous(limits = c(0, 700),
@@ -124,7 +136,7 @@ c5 <- ggplot(present) +
                      minor_breaks = seq(0, 700, 25),
                      sec.axis = sec_axis(transform = ~ .x/scaler)) +
   scale_x_continuous(breaks = c(minyear:maxyear)) +
-  scale_fill_manual(values = c("steelblue", "limegreen", "darkred")) +
+  scale_fill_manual(values = c(col_a, col_g, col_p)) +
   labs(title = "Teilnehmerentwicklung nach Kategorien (absolut)") +
   mytheme +
   theme(axis.title.y = element_text(),
@@ -136,11 +148,12 @@ c6 <- ggplot(present) +
   geom_col(position = position_fill())  +
   geom_text(aes(label = round(presence/tot, 2)),
             position = position_fill(vjust = .5),
-            size = 2) +
+            size = 3) +
   labs(fill = "Kategorie", y = "Ant. Teilnehmer") +
   scale_x_continuous(breaks = c(minyear:maxyear)) +
-  scale_y_continuous(labels = percent_format()) +
-  scale_fill_manual(values = c("steelblue", "limegreen", "darkred")) +
+  scale_y_continuous(labels = percent_format(),
+                     breaks = seq(0, 1, .2)) +
+  scale_fill_manual(values = c(col_a, col_g, col_p)) +
   labs(title = "Teilnehmerentwicklung nach Kategorien (relativ)") +
   mytheme
 
@@ -151,11 +164,4 @@ leg <- get_legend(c6 + theme(legend.title = element_blank(),
                              legend.background = element_rect(colour = "darkgrey")))
 
 c6 <- c6 + theme(axis.title.y = element_text(),
-                 legend.position = "none") 
-
-#arrange everything on one page
-gridplot1 <- arrangeGrob(c1,
-                          arrangeGrob(c2, c3, c4, widths = c(1.6, 6.7, 1.7)),
-                          arrangeGrob(c5, leg, c6, widths = c(4.5, 1, 4.5)),
-                          heights = c(5,2,3),
-                          layout_matrix = rbind(c(1), c(2), c(3)))
+                 legend.position = "none")

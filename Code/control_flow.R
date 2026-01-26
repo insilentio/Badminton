@@ -26,6 +26,12 @@ mytheme <- theme_minimal() +
         # plot.background = element_rect(colour = "darkgrey", fill=NA, linewidth =.5),
         panel.background = element_rect(fill = 'white', colour = 'white'))
 
+# color definitions for actives, guests, passives
+# (derived from presence file)
+col_a <-  "#2F6EBA"
+col_g <-  "#4EAD5B"
+col_p <-  "#AF7440"
+col_mw <- "#B02418"
 
 # source all code files ---------------------------------------------------
 
@@ -47,20 +53,4 @@ source("Code/jubilee.R")
 
 # output ------------------------------------------------------------------
 
-# save both pages into one pdf for double sided A4 printout
-pdf("Output/Teilnehmerstatistik.pdf", width = 29.7/2.54, height = 21/2.54)
-lapply(list(gridplot1, gridplot2), grid.arrange)
-dev.off()
-
-# save slides as png's for presentation
-for (i in 1:9) {
-  ggsave(paste0("Output/Slides", i, ".png"),
-          get(paste0("gridslide", i)),
-          device = png(),
-          width = 16, height = 9)
-}
-# this one directly, because arrangeGrob does not work with ggbreak
-ggsave(paste0("Output/Slides10.png"),
-       jub4,
-       device = png(),
-       width = 16, height = 9)
+source("Code/outputs.R")

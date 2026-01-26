@@ -77,7 +77,7 @@ actives <- stamm |>
 #upper level for memebership years in plots
 maxact <- (max(actives$n_years) %/% 10 +1) * 10
 
-kpi_desc <- c("Besuche/Training", "Standardabweichung", "Besuche (total)", "Besuche\n(Veränderung zum Vorjahr)", "Trainings")
+kpi_desc <- c("Besuche/Training", "Aktive/Training", "Standardabweichung", "Besuche (total)", "Besuche\n(Veränderung zum Vorjahr)", "Trainings")
 #KPIs last year
 kpi <- stats |>
   filter(year == maxyear & type == "Training") |>
@@ -94,12 +94,20 @@ kpi <- stats |>
               pluck(3,2) |>
               round(0)) |>
   bind_cols(nr_tr = (nr_trainings |> filter(year == maxyear))$n) |>
+  bind_cols(stats |>
+              left_join(stamm |> select(ID, year, status), by = c("ID", "year")) |> 
+              filter(year == maxyear & type == "Training" & status == "a") |>
+              group_by(week) |>
+              summarise(visits = sum(presence)) |> 
+              summarise(avg_a = round(mean(visits), 1))) |> 
+  select(avg, avg_a, sd, visits, upratio, nr_tr) |> 
   pivot_longer(everything(), names_to = "cat", values_to = "values") |>
-  mutate(desc = kpi_desc, idx = seq(9,1,-2)) |>
+  mutate(desc = kpi_desc, idx = seq(11, 1, -2)) |>
   mutate(values = as.character(values)) |>
   mutate(values = if_else(cat == "upratio",
                           if_else(values >= 0, paste0("+", values, "%"), paste0("-", values, "%")),
                                   values))
+
 
 
 #med, mean, max, min visits per person
