@@ -103,7 +103,8 @@ c3 <- stats |>
 
 # without unpersonal values
 c4 <- stats |>
-  filter(!ID %in% c("Gäste div.", "Passive div.")) |>
+  left_join(stamm |> select(ID, year, status), by = c("ID", "year")) |> 
+  filter(status == "a") |> 
   filter(year %in% c(maxyear, maxyear-1, maxyear-2, maxyear-3)) |>
   group_by(year, ID) |>
   summarise(presence = sum(presence), .groups = "drop") |>
