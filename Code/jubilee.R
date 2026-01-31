@@ -6,9 +6,7 @@
 actives2004plus <- stamm |>
   filter(year >= 2004 & status == "a") |>
   distinct(ID, sex, status, n_years, Vorname, since) |>
-  arrange(desc(n_years)) |>
-  mutate(ID = factor(ID, levels = ID), Vorname = paste0(Vorname, " ", substr(ID,1,1), "."))
-
+  arrange(desc(n_years)) 
 
 # charts ------------------------------------------------------------------
 
@@ -44,7 +42,7 @@ jub2 <- actives2004plus |>
 
 
 # weekly visits over the years
-# this was only used once (2024); it is a bit stretched to interpret anything here
+# it is a bit far-fetched to interpret anything here
 jub3 <- stats |>
   mutate(train = ifelse(type == "Training", 1, 0)) |>
   filter(train == 1) |>
@@ -52,24 +50,24 @@ jub3 <- stats |>
   summarise(presence = sum(presence), .groups  = "drop") |>
   na.omit() |>
   ggplot() +
-  geom_line(mapping = aes(x = week, y = presence, color = as.factor(year))) +
-  xlab(label = "Woche") +
-  scale_y_continuous(limits = c(0,lim_upper),
-                     breaks = seq(0,lim_upper,2),
-                     expand = c(0,0)) +
-  scale_x_continuous(limits = c(1,52),
-                     breaks = c(1,10, 20, 30, 40, 50),
-                     minor_breaks = seq(2,52,2),
-                     expand = c(0,0)) +
-  mytheme +
-  theme(legend.title = element_blank(),
-        legend.position = "inside",
-        # legend.position.inside = c(.2,.95),
-        legend.direction = "horizontal",
-        panel.grid.major.x = element_line(),
-        panel.grid.minor.x = element_line(),
-        axis.text.x = element_text(angle = 0, vjust = 0, hjust = 0.5),
-        axis.title.x = element_text(vjust = 6, hjust = .5))
+    geom_line(mapping = aes(x = week, y = presence, color = as.factor(year))) +
+    xlab(label = "Woche") +
+    scale_y_continuous(limits = c(0,lim_upper),
+                       breaks = seq(0,lim_upper,2),
+                       expand = c(0,0)) +
+    scale_x_continuous(limits = c(1,52),
+                       breaks = c(1,10, 20, 30, 40, 50),
+                       minor_breaks = seq(2,52,2),
+                       expand = c(0,0)) +
+    mytheme +
+    theme(legend.title = element_blank(),
+          legend.position = "inside",
+          legend.position.inside = c(.2,.95),
+          legend.direction = "horizontal",
+          panel.grid.major.x = element_line(),
+          panel.grid.minor.x = element_line(),
+          axis.text.x = element_text(angle = 0, vjust = 0, hjust = 0.5),
+          axis.title.x = element_text(vjust = 6, hjust = .5))
 
 grouped_data <- stats |>
   mutate(train = ifelse(type == "Training", 1, 0)) |>
@@ -82,10 +80,9 @@ grouped_data <- stats |>
   filter(trainings > 5) |>
   na.omit()
 
-# manually: change the value in scale_colour_manual to the currently active members value
 jub3b <- jub3 +
   theme(legend.position = "none") +
-  scale_colour_manual(values = rep("lightgrey", 22))
+  scale_colour_manual(values = rep("lightgrey", maxyear - 2004 + 1))
 jub3c <- jub3b +
   geom_line(data = grouped_data, mapping = aes(x = week, y = presence)) +
   geom_smooth(data = grouped_data, mapping = aes(x = week, y = presence),
@@ -99,10 +96,8 @@ jub3d <- jub3c +
 # longest streak (with interrupted y scale :-( )
 # only active members from stamm relevant
 jub4stats <- stats |> 
-  inner_join(stamm |> 
-               select(ID) |> 
-               unique(), by = "ID") |>
-  filter(type != "Ferien", ID != "Gäste div.", ID != "Passive div.") |>
+  filter(ID %in% stamm$ID, 
+         type != "Ferien") |>
   arrange(ID, year, week) |>
   mutate(lags = if_else(lag(presence, default = 0) == 1, 0, 1)) |>
   mutate(lags_prevyear = if_else(year != maxyear, lags, 1)) |> 
@@ -117,13 +112,13 @@ jub4stats <- stats |>
   summarise(maxstreak = max(streak), maxstreak_prevyear = max(streak_prevyear)) |> 
   mutate(plus = maxstreak - maxstreak_prevyear) |>
   mutate(plus = ifelse(plus == 0, "", paste0("+", plus))) |> 
-  arrange(desc(maxstreak)) |>
   left_join(stamm |> 
               select(c(ID, Nachname, Vorname, n_years)) |> 
               distinct(ID, .keep_all = TRUE), by = "ID") |>
   filter(n_years > 0,
          maxstreak > 0) |> 
-  mutate(Vorname = paste0(Vorname, " ", substr(ID,1,1), ".")) |>
+  arrange(desc(maxstreak)) |> 
+  # for correct re-order in chart, factor has to be recreated
   mutate(Vorname = factor(Vorname, levels = Vorname))
 
 # some helper variables to determine senseful limits for the chart
@@ -143,20 +138,3 @@ jub4 <- ggplot(jub4stats) +
   scale_y_break(breaks = c(upper2, lower), expand = expansion(mult = c(.02, .02))) +
   geom_text(aes(x = Vorname, y = maxstreak, label = plus),
             hjust = 0.5, vjust = 1.2, angle = 0, colour= "green", size = 3)
-
-
-# some informative values -------------------------------------------------
-# not used in output currently
-# mean visits by sex
-info1 <- stats |>
-  group_by(ID, year) |>
-  summarise(visits = sum(presence), .groups = "drop_last") |>
-  inner_join(actives, by = "ID", keep = TRUE, suffix = c(".x", "")) |>
-  group_by(sex,) |>
-  summarize(meanvisits = mean(visits))
-
-# top dates regarding nr. of visits
-info2 <- stats |>
-  group_by(year, week) |>
-  summarize(nr = sum(presence), .groups = "drop") |>
-  arrange(desc(nr))

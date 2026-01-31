@@ -2,37 +2,23 @@
 # data prep
 
 present <- stats |>
-  left_join(stamm, by = c("ID", "year")) |>
   mutate(cat = case_when(status == "a" ~ "Aktive",
                          status == "p" ~ "Passive",
                          status == "g" ~ "Gäste",
                          ID == "Gäste div." ~ "Gäste",
                          ID == "Passive div." ~ "Passive")) |>
   group_by(year, cat) |> 
-  summarise(presence = sum(presence), .groups = "drop")
-
-totals <- stats |>
-  filter(type == "Training") |>
-  group_by(year, week) |>
-  summarise(presence = sum(presence), .groups = "drop_last") |>
-  summarise(tot = sum(presence), mean = mean(presence), .groups = "drop")
-
-present <- present |>
-  left_join(totals, by = "year")
+  summarise(presence = sum(presence), .groups = "drop") |> 
+  left_join(stats |>
+    filter(type == "Training") |>
+    group_by(year, week) |>
+    summarise(presence = sum(presence), .groups = "drop_last") |>
+    summarise(tot = sum(presence), mean = mean(presence), .groups = "drop"), by = "year")
 
 #plots
-#try to replicate excel table. Not so easy, therefore for the moment switched to a solution
-#where excel table must be imported as a PNG
-# stats |>
-#   filter(year == maxyear) |>
-#   mutate(presence = ifelse(presence == 0, NA, presence),
-#          presence = ifelse(type == "Ferien", "F", presence)) |>
-#   left_join(stamm, by = c("ID", "year")) |>
-#   select(ID, Vorname, Nachname, week, presence) |>
-#   pivot_wider(id_cols = c(1:4), names_from = week, values_from = presence)
+# replication of the presence list in code is not easy, therefore for the moment switched to a solution
+# where excel table must be imported as a PNG
 
-# pdf_render_page("Data/BCT_Excel.pdf", dpi = 300) |>
-#   writePNG("Data/BCT_Excel.png")
 
 c1 <- ggdraw() +
   draw_image("Data/BCT_Excel.png")
@@ -63,7 +49,6 @@ rolling <- stats |>
 
 lim_upper <- max(rolling$value)
 c3 <- stats |> 
-  left_join(stamm |> select(ID, year, status), by = c("ID", "year")) |> 
   filter(year == maxyear, type == "Training") |>
   mutate(status = ifelse(ID == "Gäste div.", "g", status)) |> 
   mutate(status = ifelse(ID == "Passive div.", "p", status)) |> 
@@ -90,10 +75,6 @@ c3 <- stats |>
     scale_colour_manual(values = c(col_mw)) +
     mytheme +
     theme(legend.position = "none",
-          #legend.title = element_blank(),
-          # legend.position = "inside",
-          # legend.position.inside = c(.5,1),
-          # legend.direction = "horizontal",
           panel.grid.major.x = element_line(),
           panel.grid.minor.x = element_line(),
           axis.text.x = element_text(angle = 0, vjust = 0, hjust = 0.5),
@@ -103,7 +84,6 @@ c3 <- stats |>
 
 # without unpersonal values
 c4 <- stats |>
-  left_join(stamm |> select(ID, year, status), by = c("ID", "year")) |> 
   filter(status == "a") |> 
   filter(year %in% c(maxyear, maxyear-1, maxyear-2, maxyear-3)) |>
   group_by(year, ID) |>
@@ -130,7 +110,7 @@ c5 <- ggplot(present) +
             nudge_y = 10,
             inherit.aes = FALSE,
             size = 3) +
-  geom_line(aes(y = mean*scaler), color = "pink") +
+  geom_line(aes(y = mean*scaler), color = col_mw) +
   labs(fill = "Kategorie", y = "Anz. Teilnehmer") +
   scale_y_continuous(limits = c(0, 700),
                      breaks = seq(0, 700, 100),
