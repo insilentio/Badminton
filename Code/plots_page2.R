@@ -1,5 +1,4 @@
 #plots second page
-#
 
 #generate the plots for the Teilnehmerstatistik
 p1 <- actives |>
@@ -30,7 +29,9 @@ ggplot() +
                      breaks = seq(0, maxact,10),
                      minor_breaks = seq(0, maxact, 2))
 
+# visits per year, only of active members
 p3 <- stats |>
+  filter(status == "a") |>
   group_by(ID, year) |>
   summarise(visits = sum(presence), .groups = "drop_last") |>
   inner_join(actives, by = "ID", keep = TRUE, suffix = c(".x", "")) |>
@@ -48,21 +49,20 @@ p3 <- stats |>
 
 # ranking per year, only of active members
 p4 <- stats |>
-  inner_join(stamm, by = c("ID", "year"), keep = TRUE, suffix = c("", ".x")) |>
-  group_by(ID, year, status, Vorname) |>
-  summarise(visits = sum(presence), .groups = "drop_last") |>
   filter(status == "a") |>
+  group_by(ID, year, Vorname) |>
+  summarise(visits = sum(presence), .groups = "drop_last") |>
   group_by(year) |>
   mutate(rank = min_rank(desc(visits)), ID = ID, year = year, Vorname = Vorname) |>
-  right_join(actives, by = "ID", keep = TRUE, suffix = c("", ".y")) |>
+  inner_join(actives, by = "ID", keep = TRUE, suffix = c(".x", "")) |>
   ggplot() +
-    aes(x = Vorname.y, y = rank) +
+    aes(x = Vorname, y = rank) +
     geom_boxplot(coef = 100, width = .5) +
     stat_summary(fun = mean, geom = "point", size = 1, shape = 3, colour = col_a, show.legend = TRUE) +
     mytheme +
     labs(title = "Persönliche Rankingbandbreite seit 2004",
          subtitle = "") +
-    scale_y_continuous(limits =c(1,23), breaks = c(1:23), minor_breaks = c(1:23))
+    scale_y_continuous(limits =c(1, nr_actives), breaks = c(1:nr_actives), minor_breaks = c(1:nr_actives))
 
 
 p5a <- ggplot(figs) +

@@ -4,7 +4,8 @@
 # if desired, manually verify yearly total with excel file
 stats |>
   group_by(year) |>
-  summarise(tot = sum(presence))
+  summarise(tot = sum(presence)) |> 
+  arrange(desc(year))
 
 #all visits
 visits <- stats |> tally(presence)
@@ -14,7 +15,6 @@ cumvisits <- stats |>
   count(ID, wt = presence) |>
   filter(!grepl("Gäste", ID) & !grepl("Passive", ID)) |> 
   left_join(stats |> 
-      left_join(stamm, by = c("ID", "year")) |>
       filter(status == "a") |> 
               count(ID, wt = presence, name = "n_active"), by = "ID") |> 
   arrange(-n)
@@ -64,15 +64,16 @@ maxyear <- max(stats$year)
 #only currently active members
 actives <- stamm |>
   filter(year == maxyear & status == "a") |>
-  mutate(Vorname = paste0(Vorname, " ", substr(Nachname, 1, 1), ".")) |>
   select(ID, sex, status, n_years, Vorname, since) |>
-  arrange(desc(n_years)) |>
-  mutate(ID = factor(ID, levels = ID), Vorname = factor(Vorname, levels = Vorname)) |> 
   left_join(stamm |> 
     filter(year >= 2004 & status == "a") |> 
     group_by(ID) |> 
-    summarise(activeYearsSince2004 = n()), by = "ID")
+    summarise(activeYearsSince2004 = n()), by = "ID") |> 
+  # for correct re-order in chart, factor has to be recreated
+  arrange(desc(n_years)) |>
+  mutate(Vorname = factor(Vorname, levels = Vorname))
 
+nr_actives <- nrow(actives)
 
 #upper level for memebership years in plots
 maxact <- (max(actives$n_years) %/% 10 +1) * 10
@@ -95,7 +96,6 @@ kpi <- stats |>
               round(0)) |>
   bind_cols(nr_tr = (nr_trainings |> filter(year == maxyear))$n) |>
   bind_cols(stats |>
-              left_join(stamm |> select(ID, year, status), by = c("ID", "year")) |> 
               filter(year == maxyear & type == "Training" & status == "a") |>
               group_by(week) |>
               summarise(visits = sum(presence)) |> 
@@ -107,8 +107,6 @@ kpi <- stats |>
   mutate(values = if_else(cat == "upratio",
                           if_else(values >= 0, paste0("+", values, "%"), paste0("-", values, "%")),
                                   values))
-
-
 
 #med, mean, max, min visits per person
 summaries <- stats |>
@@ -131,6 +129,22 @@ mean_pp <- stats |>
   summarise(mean=mean(sum), tot=mean*n()) |>
   arrange(-mean)
 
+# some informative values -------------------------------------------------
+# not used in output currently
+# mean visits by sex
+info1 <- stats |>
+  group_by(ID, year) |>
+  summarise(visits = sum(presence), .groups = "drop_last") |>
+  inner_join(actives, by = "ID", keep = TRUE, suffix = c(".x", "")) |>
+  group_by(sex,) |>
+  summarize(meanvisits = mean(visits))
+
+# top dates regarding nr. of visits
+info2 <- stats |>
+  group_by(year, week) |>
+  summarize(nr = sum(presence), .groups = "drop") |>
+  arrange(desc(nr))
+
 # big figures for tiles in Teilnehmerstatistik ------------------------------------------------
 
 # collect the figures for the Teilnehmerstatistik
@@ -150,4 +164,3 @@ figs <- tibble(cat = "Trainings", value = all_trainings$n,
   add_row(cat = "Frauenanteil", value = label_percent(accuracy = .1)(females$ratio),
           head = "seit Gründung", .after = 5) |> 
   mutate(cat = factor(cat, levels = cat))
-

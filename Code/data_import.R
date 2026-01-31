@@ -162,7 +162,28 @@ stamm <- stamm |>
   slice(-1) |>
   pivot_longer(starts_with("y"), names_to = "year",  values_to = "status") |>
   select(ID, sex, year, status, JahreaktivimVerein, Mitgliedseit, Nachname, Vorname) |>
-  mutate(year = substr(year, 2, 5)) |>
+  mutate(year = substr(year, 2, 5),
+         VornameOriginal = Vorname) |>
   rename(n_years = JahreaktivimVerein, since = Mitgliedseit) |>
   mutate(across(c("year", "n_years"), as.numeric)) |>
-  filter(!is.na(ID))
+  filter(!is.na(ID)) |> 
+  mutate(Vorname = paste0(Vorname, " ", substr(Nachname, 1, 1), ".")) |> 
+  mutate(ID = factor(ID, levels = unique(ID)))
+
+# In rare cases, the pattern "Vorname + 1.letter Nachname" is duplicated
+# Find duplicates and correct by adding more Nachname letters until no duplicates left
+dups <- find_dupes(stamm)
+while (nrow(dups) > 0) {
+  for (i in 1:nrow(dups)) { 
+    stamm[stamm$ID == dups$ID[1],] <- stamm[stamm$ID == dups$ID[1],] |> 
+      mutate(Vorname = paste0(VornameOriginal, " ", substr(Nachname, 1, 2), "."))
+  }
+  dups <- find_dupes(stamm)
+}
+
+stamm <- stamm |>     
+  mutate(Vorname = factor(Vorname, levels = unique(Vorname)))
+         
+# enhance stats
+stats <- stats |>
+  left_join(stamm |> select(ID, year, status, Vorname), by = c("ID", "year"))

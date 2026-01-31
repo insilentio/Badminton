@@ -48,38 +48,22 @@ gridslide3 <- arrangeGrob(c5, c6,
   theme(plot.background = element_rect(fill="white", color = "white")) +
   draw_grob(leg, x = 0.45)
 
-gridslide4 <- arrangeGrob(p2,
-                          heights = 1,
-                          layout_matrix = rbind(c(1)))
+gridslide4 <- p2
 
-gridslide5 <- arrangeGrob(p1,
-                          heights = 1,
-                          layout_matrix = rbind(c(1)))
+gridslide5 <- p1
 
-gridslide6 <- arrangeGrob(p3,
-                          heights = 1,
-                          layout_matrix = rbind(c(1)))
+gridslide6 <- p3
 
-
-# this one directly, because arrangeGrob does not work with ggbreak
 gridslide7 <- jub4
 
+# extra slides
+gridslide_ext1 <- jub2
 
-gridslide_ext1 <- arrangeGrob(jub2,
-                          heights = 1,
-                          layout_matrix = rbind(c(1)))
+gridslide_ext2 <- jub1
 
-gridslide_ext2 <- arrangeGrob(jub1,
-                              heights = 1,
-                              layout_matrix = rbind(c(1)))
+gridslide_ext3 <- p4
 
-gridslide_ext3 <- arrangeGrob(p4,
-                          heights = 1,
-                          layout_matrix = rbind(c(1)))
-
-gridslide_ext4 <- arrangeGrob(jub3c,
-                              heights = 1,
-                              layout_matrix = rbind(c(1)))
+gridslide_ext4 <- jub3c
 
 
 # save slides as png's for presentation
@@ -96,5 +80,3 @@ for (i in 1:4) {
          device = png(),
          width = 16, height = 9)
 }
-
-
