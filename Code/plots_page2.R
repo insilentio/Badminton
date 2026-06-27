@@ -4,11 +4,13 @@
 p1 <- actives |>
   left_join(cumvisits, by = "ID", keep = TRUE) |>
   select(Vorname, n) |>
-  waterfall(draw_lines = FALSE,
-            rect_width = .9,
-            rect_border = NA,
-            fill_colours = rep(col_a, nrow(actives)),
-            fill_by_sign = FALSE) +
+  waterfall(
+    draw_lines = FALSE,
+    rect_width = .9,
+    rect_border = NA,
+    fill_colours = rep(col_a, nrow(actives)),
+    fill_by_sign = FALSE
+  ) +
   mytheme +
   ggtitle("Kumulierte Teilnahmen der Aktivmitglieder seit 2004")
 
@@ -16,18 +18,26 @@ p1 <- actives |>
 # active membership and the average visits per year during the years as active member (since 2004 only)
 p2 <- actives |>
   left_join(cumvisits, by = "ID") |>
-  mutate(avgperyear = n_active/activeYearsSince2004) |> 
-ggplot() +
+  mutate(avgperyear = n_active / activeYearsSince2004) |>
+  ggplot() +
   aes(x = Vorname, y = n_years) +
   geom_col(fill = col_a) +
   geom_point(aes(x = Vorname, y = avgperyear), color = "darkblue") +
-  geom_text(aes(x = Vorname, y = n_years, label = since),
-            hjust = 1, angle = 90, colour= "darkgrey") +
+  geom_text(
+    aes(x = Vorname, y = n_years, label = since),
+    hjust = 1,
+    angle = 90,
+    colour = "darkgrey"
+  ) +
   mytheme +
-  ggtitle("Aktivmitgliedschaftsdauer in Jahren, durchschnittliche Besuchsquote und Beitrittsjahr") +
-  scale_y_continuous(limits = c(0,maxact),
-                     breaks = seq(0, maxact,10),
-                     minor_breaks = seq(0, maxact, 2))
+  ggtitle(
+    "Aktivmitgliedschaftsdauer in Jahren, durchschnittliche Besuchsquote und Beitrittsjahr"
+  ) +
+  scale_y_continuous(
+    limits = c(0, maxact),
+    breaks = seq(0, maxact, 10),
+    minor_breaks = seq(0, maxact, 2)
+  )
 
 # visits per year, only of active members
 p3 <- stats |>
@@ -37,15 +47,28 @@ p3 <- stats |>
   inner_join(actives, by = "ID", keep = TRUE, suffix = c(".x", "")) |>
   left_join(nr_trainings, by = "year") |>
   select(ID, visits, Vorname, n) |>
-  mutate(visits = visits/n*100) |>
+  mutate(visits = visits / n * 100) |>
   ggplot() +
-    aes(x = Vorname, y = visits) +
-    geom_boxplot(outlier.size = 1, outlier.alpha = .5, coef = 100, width = .5) +
-    stat_summary(fun = mean, geom = "point", size = 1, shape = 3, colour = col_a, show.legend = TRUE) +
-    mytheme +
-    labs(title = "Persönliche Besuchsbandbreite seit 2004",
-         subtitle = "in % der Jahresanzahl Trainings") +
-    scale_y_continuous(limits = c(0, 100), breaks = seq(0,100,20), minor_breaks = seq(0,100,5))
+  aes(x = Vorname, y = visits) +
+  geom_boxplot(outlier.size = 1, outlier.alpha = .5, coef = 100, width = .5) +
+  stat_summary(
+    fun = mean,
+    geom = "point",
+    size = 1,
+    shape = 3,
+    colour = col_a,
+    show.legend = TRUE
+  ) +
+  mytheme +
+  labs(
+    title = "Bandbreite der Trainingsbesuche seit 2004",
+    subtitle = "in % der Jahresanzahl Trainings"
+  ) +
+  scale_y_continuous(
+    limits = c(0, 100),
+    breaks = seq(0, 100, 20),
+    minor_breaks = seq(0, 100, 5)
+  )
 
 # ranking per year, only of active members
 p4 <- stats |>
@@ -53,16 +76,31 @@ p4 <- stats |>
   group_by(ID, year, Vorname) |>
   summarise(visits = sum(presence), .groups = "drop_last") |>
   group_by(year) |>
-  mutate(rank = min_rank(desc(visits)), ID = ID, year = year, Vorname = Vorname) |>
+  mutate(
+    rank = min_rank(desc(visits)),
+    ID = ID,
+    year = year,
+    Vorname = Vorname
+  ) |>
   inner_join(actives, by = "ID", keep = TRUE, suffix = c(".x", "")) |>
   ggplot() +
-    aes(x = Vorname, y = rank) +
-    geom_boxplot(coef = 100, width = .5) +
-    stat_summary(fun = mean, geom = "point", size = 1, shape = 3, colour = col_a, show.legend = TRUE) +
-    mytheme +
-    labs(title = "Persönliche Rankingbandbreite seit 2004",
-         subtitle = "") +
-    scale_y_continuous(limits =c(1, nr_actives), breaks = c(1:nr_actives), minor_breaks = c(1:nr_actives))
+  aes(x = Vorname, y = rank) +
+  geom_boxplot(coef = 100, width = .5) +
+  stat_summary(
+    fun = mean,
+    geom = "point",
+    size = 1,
+    shape = 3,
+    colour = col_a,
+    show.legend = TRUE
+  ) +
+  mytheme +
+  labs(title = "Bandbreite der Besuchsrangierung seit 2004", subtitle = "") +
+  scale_y_continuous(
+    limits = c(1, nr_actives),
+    breaks = c(1:nr_actives),
+    minor_breaks = c(1:nr_actives)
+  )
 
 
 p5a <- ggplot(figs) +
